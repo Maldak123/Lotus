@@ -1,0 +1,60 @@
+#um,
+#dois,
+#tres,
+#quatro {
+  /* animation-iteration-count: infinite; */
+  animation-timing-function: ease-in-out;
+}
+
+#um {
+  animation-name: rotate-um;
+  animation-duration: 2.4s;
+}
+#dois {
+  animation-name: rotate-dois;
+  animation-duration: 3s;
+}
+#tres {
+  animation-name: rotate-tres;
+  animation-duration: 2s;
+}
+#quatro {
+  animation-name: rotate-quatro;
+  animation-duration: 2.4s;
+}
+
+@keyframes rotate-um {
+  0%, 100% {
+    rotate: 0deg;
+  }
+  50% {
+    rotate: 180deg;
+  }
+}
+
+@keyframes rotate-dois {
+  0%, 100% {
+    rotate: 90deg;
+  }
+  50% {
+    rotate: -270deg;
+  }
+}
+
+@keyframes rotate-tres {
+  0%, 100% {
+    rotate: 45deg;
+  }
+  50% {
+    rotate: 225deg;
+  }
+}
+
+@keyframes rotate-quatro {
+  0%, 100% {
+    rotate: 135deg;
+  }
+  50% {
+    rotate: -315deg;
+  }
+}
