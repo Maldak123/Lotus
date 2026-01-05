@@ -1,4 +1,4 @@
-const extensionsType = {
+export const extensionsType = {
   WORD: {
     mimeTypes: [
       "application/msword",

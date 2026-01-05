@@ -7,7 +7,8 @@ import path from "path";
 export default defineConfig({
 	plugins: [react(), tailwindcss()],
 	server: {
-		allowedHosts: [".ngrok-free.dev"]
+		allowedHosts: [".ngrok-free.dev"],
+		host: true
 	},
 	resolve: {
 		alias: {

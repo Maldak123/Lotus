@@ -21,8 +21,6 @@ export const enviarArquivos = async (arquivos: File[]) => {
     respostas.push(data);
   }
 
-  console.log(respostas);
-
   return respostas;
 };
 

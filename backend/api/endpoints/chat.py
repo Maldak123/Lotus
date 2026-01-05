@@ -7,16 +7,13 @@ router = APIRouter()
 
 class MensagemTemplate(BaseModel):
     sender: str
-    message: str
-
-
-class MessageRequest(BaseModel):
     mensagem: str
 
 
 @router.post("/sendmessage")
-async def message(request: MessageRequest):
+async def message(request: MensagemTemplate):
     # userTemplate = MensagemTemplate(sender="user", message=request.mensagem)
-    systemTemplate = MensagemTemplate(sender="system", message="recebido")
+    systemTemplate = MensagemTemplate(sender="system", mensagem="recebido")
 
-    return {"system": systemTemplate}
+    print(systemTemplate.model_dump())
+    return systemTemplate.model_dump()
