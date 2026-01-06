@@ -1,58 +1,63 @@
-from fastapi import UploadFile, File, Form, APIRouter, HTTPException
-from dataclasses import dataclass
-from pydantic import BaseModel
-import re
+from pathlib import Path
+from uuid import UUID
+from typing import Dict
 
+from fastapi import UploadFile, File, Form, APIRouter, HTTPException, status
+from .schemas import (
+    RemoveFileRequest,
+    RetornoRequest,
+    DocumentoRetornoRequest,
+    ArquivoComMetadata,
+)
 
 router = APIRouter()
 
-files = []
+files_db: Dict[str, ArquivoComMetadata] = {}
 
 
-@dataclass
-class ArquivoComMetadata:
-    id: str
-    sessao: str
-    file: UploadFile
+def criar_documento_retorno(doc: ArquivoComMetadata) -> DocumentoRetornoRequest:
+    extensao = Path(doc.file.filename).suffix
 
-
-class RemoveFileRequest(BaseModel):
-    id_exclusao: str
+    return DocumentoRetornoRequest(
+        id_arquivo=doc.id_arquivo,
+        sessao=doc.sessao,
+        filename=doc.file.filename,
+        content_type=doc.file.content_type,
+        tamanho=doc.file.size,
+        extensao=extensao,
+    )
 
 
 @router.post("/sendfiles")
 async def receive_files(
-    id: str = Form(...), sessao: str = Form(...), file: UploadFile = File(...)
+    id_arquivo: UUID = Form(...),
+    sessao: str = Form(...),
+    file: UploadFile = File(...),
 ):
-    UUID = re.compile(
-        r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", re.IGNORECASE
-    )
+    str_id = str(id_arquivo)
 
-    if not UUID.match(id):
-        raise HTTPException(status_code=400, detail="ID inválido.")
+    novo_documento = ArquivoComMetadata(id_arquivo=str_id, sessao=sessao, file=file)
+    files_db[str_id] = novo_documento
 
-    documento = ArquivoComMetadata(id=id, sessao=sessao, file=file)
-    files.append(documento)
-    extensao = f".{documento.file.filename.split(".")[-1]}"
-
-    return {
-        "status": 200,
-        "documento": {
-            "id_arquivo": documento.id,
-            "sessao": documento.sessao,
-            "filename": documento.file.filename,
-            "content_type": documento.file.content_type,
-            "tamanho": documento.file.size,
-            "extensao": extensao,
-        },
-    }
+    return RetornoRequest(
+        status=200,
+        documento=criar_documento_retorno(novo_documento),
+    ).model_dump()
 
 
 @router.delete("/removefile")
 async def remove_file(request: RemoveFileRequest):
-    if not any(request.id_exclusao == e.id for e in files):
-        raise HTTPException(status_code=404, detail="Arquivo não encontrado")
+    arquivo_removido = files_db.pop(request.id_exclusao, None)
 
-    files[:] = [e for e in files if e.id != request.id_exclusao]
+    if not arquivo_removido:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Arquivo não encontrado"
+        )
 
-    return {"status": 200}
+    print(f"Removido: {arquivo_removido.id_arquivo}")
+
+    return RetornoRequest(
+        status=200,
+        mensagem="Arquivo removido.",
+        documento=criar_documento_retorno(arquivo_removido),
+    ).model_dump()

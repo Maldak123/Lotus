@@ -1,12 +1,12 @@
 import type { Mensagem } from "@/types/Mensagem";
 import React, { createContext, useContext, useState } from "react";
 
-interface ChatContextType {
+interface ChatContextProps {
   chat: Mensagem[];
   setChat: React.Dispatch<React.SetStateAction<Mensagem[]>>;
 }
 
-export const ChatContext = createContext<ChatContextType>({
+export const ChatContext = createContext<ChatContextProps>({
   chat: [],
   setChat: () => {},
 });
@@ -14,7 +14,7 @@ export const ChatContext = createContext<ChatContextType>({
 export default function ChatProvider({
   children,
 }: {
-  children: React.ReactElement[];
+  children: React.ReactElement;
 }) {
   const [chat, setChat] = useState<Mensagem[]>([]);
 

@@ -18,8 +18,8 @@ const AddFile = ({ changeFile }: AddFileProps) => {
         htmlFor="input_file"
         className="group flex cursor-pointer items-center justify-center rounded-full bg-[#333333] p-1 transition-colors hover:bg-[rgba(255,255,255,0.75)] lg:size-16"
       >
-        <div className="flex items-center justify-center rounded-full bg-[#111] p-1 lg:size-13">
-          <Plus className="text-[#333333] transition-colors group-hover:text-[rgba(255,255,255,0.75)] lg:scale-120 lg:stroke-3" />
+        <div className="flex items-center justify-center rounded-full bg-[#111] p-1 lg:size-14">
+          <Plus className="text-[#333333] transition-colors group-hover:text-[rgba(255,255,255,0.75)] lg:scale-120 lg:stroke-2" />
         </div>
       </label>
 

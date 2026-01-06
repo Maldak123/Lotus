@@ -1,3 +1,4 @@
+import type { AlertaType } from "@/types/AlertaType";
 import { getArchiveType } from "./fileExtensions";
 
 interface validarFileProps {
@@ -8,7 +9,7 @@ export const validarFile = ({ e }: validarFileProps) => {
   const TAMANHO_ARQUIVO = 5242880;
   const arquivosBloqueados: string[] = [];
   const extensoesBloqueadas: string[] = [];
-  const alertas = [];
+  const alertas: AlertaType[] = [];
   let arquivosFiltrados: File[] = [];
 
   if (e.target.files && e.target.files.length > 0) {
@@ -33,10 +34,16 @@ export const validarFile = ({ e }: validarFileProps) => {
     });
 
     if (arquivosBloqueados.length > 0) {
-      alertas.push(`Os arquivos maiores que 5MB foram removidos.`);
+      alertas.push({
+        tipo: "alerta",
+        mensagem: `Os arquivos maiores que 5MB foram removidos.`,
+      });
     }
     if (extensoesBloqueadas.length > 0) {
-      alertas.push(`Os arquivos do tipo .${extensoesBloqueadas.join(", .")} não são permitidos.`);
+      alertas.push({
+        tipo: "alerta",
+        mensagem: `Os arquivos do tipo .${extensoesBloqueadas.join(", .")} não são permitidos.`,
+      });
     }
   }
 

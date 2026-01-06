@@ -8,7 +8,7 @@ export const enviarArquivos = async (arquivos: File[]) => {
     const formData = new FormData();
     const idUnico = uuidv4();
 
-    formData.append("id", idUnico);
+    formData.append("id_arquivo", idUnico);
     formData.append("sessao", "teste");
     formData.append("file", arq);
 

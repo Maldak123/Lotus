@@ -1,51 +1,44 @@
-import { useEffect, useState } from "react";
-import Files from "./Files";
+import FilesWrapper from "./files/FilesWrapper";
 import InputField from "./inputField/InputField";
-import type { FileData } from "@/types/FileData";
-import { apagarArquivo, enviarArquivos } from "@/services/FileService";
+import { apagarArquivo } from "@/services/FileService";
+import { useFilePreview } from "@/contexts/FilePreviewContext";
 
 const PromptField = () => {
-  const [listaArquivos, setListaArquivos] = useState<File[]>([]);
-  const [templateFiles, setTemplateFiles] = useState<FileData[]>([]);
+  const { filesPreview, setFilesPreview } = useFilePreview();
 
-  useEffect(() => {
-    let qntArquivos = 0;
+  // useEffect(() => {
+  //   let qntArquivos = 0;
 
-    const processarArquivos = async () => {
-      try {
-        const arquivos = await enviarArquivos(listaArquivos);
-        setTemplateFiles(arquivos);
-      } catch (e) {
-        console.log("erro: " + e);
-      }
-    };
+  //   const processarArquivos = async () => {
+  //     const arquivos = await enviarArquivos(files);
+  //     setFilesPreview(arquivos);
+  //     setFiles([])
+  //   };
 
-    if (listaArquivos.length > qntArquivos) {
-      processarArquivos();
-    } else {
-      qntArquivos = listaArquivos.length;
-    }
-  }, [listaArquivos]);
+  //   if (files.length > qntArquivos) {
+  //     processarArquivos();
+  //   } else {
+  //     qntArquivos = files.length;
+  //   }
+  // }, [files, setFilesPreview, setFiles]);
 
   const removerArquivo = (id: string, index: number) => {
-    console.log(index);
+    apagarArquivo(id);
 
-    apagarArquivo(id)
-    setListaArquivos((arq) => arq.filter((_, i) => i !== index));
+    setFilesPreview((files) =>
+      files.filter((file) => file.documento.id_arquivo !== id),
+    );
   };
 
   return (
     <div className="flex flex-col gap-4 overflow-hidden">
-      {listaArquivos.length > 0 && (
+      {filesPreview.length > 0 && (
         <div className="no-scrollbar overflow-scroll">
-          <Files arquivo={templateFiles} remover={removerArquivo} />
+          <FilesWrapper remover={removerArquivo} />
         </div>
       )}
 
-      <InputField
-        setListaArquivos={setListaArquivos}
-        templateFiles={templateFiles}
-      />
+      <InputField />
     </div>
   );
 };

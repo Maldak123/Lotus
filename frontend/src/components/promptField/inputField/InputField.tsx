@@ -1,40 +1,33 @@
 import React, { useEffect, useState } from "react";
 import InputText from "./InputText";
 import SubmitButton from "./SubmitButton";
+import AddFileWrapper from "../addFile/AddFileWrapper";
+import Alerta from "@/components/promptField/alerta/Alerta";
 import { enviarChat } from "@/services/ChatService";
-import type { FileData } from "@/types/FileData";
-import AddFileWrapper from "./addFile/AddFileWrapper";
 import { useChat } from "@/contexts/ChatContext";
-import { type Mensagem } from "@/types/Mensagem";
+import { useFiles } from "@/contexts/FilesContext";
+import { useFilePreview } from "@/contexts/FilePreviewContext";
+import type { Mensagem } from "@/types/Mensagem";
+import type { AlertaType } from "@/types/AlertaType";
 
-interface InputFieldProps {
-  templateFiles: FileData[];
-  setListaArquivos: React.Dispatch<React.SetStateAction<File[]>>;
-}
 
-const InputField = ({ setListaArquivos }: InputFieldProps) => {
+const InputField = () => {
   const { setChat } = useChat();
+  const { setFiles } = useFiles();
+  const { setFilesPreview } = useFilePreview()
 
   const [input, setInput] = useState("");
-  const [alerta, setAlerta] = useState<string[]>([]);
-
-  const filtrarArquivosRepetidos = (novosArquivos: File[]) => {
-    setListaArquivos((atual) => {
-      const nomes = atual.map((f) => f.name);
-      const unicos = novosArquivos.filter((f) => !nomes.includes(f.name));
-      return [...atual, ...unicos];
-    });
-  };
+  const [alertas, setAlertas] = useState<AlertaType[]>([]);
 
   useEffect(() => {
-    if (alerta) {
+    if (alertas) {
       const timer = setTimeout(() => {
-        setAlerta([]);
+        setAlertas([]);
       }, 10000);
 
       return () => clearTimeout(timer);
     }
-  }, [alerta]);
+  }, [alertas]);
 
   const handleSubmit = async () => {
     if (input) {
@@ -48,28 +41,25 @@ const InputField = ({ setListaArquivos }: InputFieldProps) => {
       const chatData = await enviarChat(mensagemUsuario);
       setChat((prev) => [...prev, chatData]);
 
-      setInput("")
+      setInput("");
+      setFilesPreview([]);
+      setFiles([]);
     }
   };
 
   return (
     <>
-      {alerta && (
+      {alertas && (
         <div className="flex flex-col gap-2">
-          {alerta.map((e) => (
-            <p className="line-clamp-4 h-fit w-fit rounded-sm bg-[#fb2c362c] px-2 py-1 text-red-500">
-              {e}
-            </p>
-          ))}
+          <Alerta alertas={alertas} />
         </div>
       )}
 
       <div className="flex w-full items-end gap-2">
         <AddFileWrapper
-          addArquivos={filtrarArquivosRepetidos}
-          setAlerta={setAlerta}
+          setAlerta={setAlertas}
         />
-        <InputText setInput={setInput} input={input} enviar ={handleSubmit} />
+        <InputText setInput={setInput} input={input} enviar={handleSubmit} />
         <SubmitButton enviar={handleSubmit} />
       </div>
     </>

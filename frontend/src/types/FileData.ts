@@ -1,5 +1,5 @@
 export interface FileData {
-  status: string;
+  status: number;
   documento: {
     id_arquivo: string;
     sessao: string;

@@ -8,19 +8,19 @@
 
 #um {
   animation-name: rotate-um;
-  animation-duration: 2.4s;
+  animation-duration: 4.4s;
 }
 #dois {
   animation-name: rotate-dois;
-  animation-duration: 3s;
+  animation-duration: 5s;
 }
 #tres {
   animation-name: rotate-tres;
-  animation-duration: 2s;
+  animation-duration: 4s;
 }
 #quatro {
   animation-name: rotate-quatro;
-  animation-duration: 2.4s;
+  animation-duration: 4.4s;
 }
 
 @keyframes rotate-um {

@@ -9,6 +9,10 @@
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
+
+  .infinite-animation {
+    animation-iteration-count: infinite;
+  }
 }
 
 @layer base {
