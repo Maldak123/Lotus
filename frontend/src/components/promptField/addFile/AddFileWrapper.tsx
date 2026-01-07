@@ -11,7 +11,7 @@ interface AddFileWrapperProps {
 }
 
 const AddFileWrapper = ({ setAlerta }: AddFileWrapperProps) => {
-  const { filterSetFiles, files } = useFiles();
+  const { filterSetFiles, files, setFiles } = useFiles();
   const { setFilesPreview } = useFilePreview();
   const qntArquivos = useRef<number>(0);
 
@@ -19,8 +19,9 @@ const AddFileWrapper = ({ setAlerta }: AddFileWrapperProps) => {
     async (index: number) => {
       const arquivos = await enviarArquivos(files.slice(index));
       setFilesPreview((prev) => [...prev, ...arquivos]);
+      setFiles([]);
     },
-    [files, setFilesPreview],
+    [files, setFilesPreview, setFiles],
   );
 
   useEffect(() => {
@@ -40,6 +41,7 @@ const AddFileWrapper = ({ setAlerta }: AddFileWrapperProps) => {
     }
 
     filterSetFiles(arquivo.arquivosFiltrados);
+    evento.target.value = ""
   };
 
   return (

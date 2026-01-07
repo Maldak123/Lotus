@@ -3,7 +3,9 @@ from uuid import UUID
 from typing import Dict
 
 from fastapi import UploadFile, File, Form, APIRouter, HTTPException, status
-from .schemas import (
+
+from ...services.file_parser import FileParser
+from ...schemas.schemas_request import (
     RemoveFileRequest,
     RetornoRequest,
     DocumentoRetornoRequest,
@@ -36,12 +38,14 @@ async def receive_files(
 ):
     str_id = str(id_arquivo)
 
-    novo_documento = ArquivoComMetadata(id_arquivo=str_id, sessao=sessao, file=file)
-    files_db[str_id] = novo_documento
+    doc_request = ArquivoComMetadata(id_arquivo=str_id, sessao=sessao, file=file)
+    doc = FileParser(doc_request.file)
+    doc_chunks = doc.processar_arquivo()
+
 
     return RetornoRequest(
         status=200,
-        documento=criar_documento_retorno(novo_documento),
+        documento=criar_documento_retorno(doc_request),
     ).model_dump()
 
 

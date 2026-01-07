@@ -8,7 +8,7 @@ interface validarFileProps {
 export const validarFile = ({ e }: validarFileProps) => {
   const TAMANHO_ARQUIVO = 5242880;
   const arquivosBloqueados: string[] = [];
-  const extensoesBloqueadas: string[] = [];
+  const extensoesBloqueadas: Set<string> = new Set;
   const alertas: AlertaType[] = [];
   let arquivosFiltrados: File[] = [];
 
@@ -29,7 +29,7 @@ export const validarFile = ({ e }: validarFileProps) => {
 
       if (!mimeType) {
         const extensao = e.name.split(".").slice(-1).join("");
-        extensoesBloqueadas.push(extensao);
+        extensoesBloqueadas.add(extensao);
       }
     });
 
@@ -39,10 +39,10 @@ export const validarFile = ({ e }: validarFileProps) => {
         mensagem: `Os arquivos maiores que 5MB foram removidos.`,
       });
     }
-    if (extensoesBloqueadas.length > 0) {
+    if (extensoesBloqueadas.size > 0) {
       alertas.push({
         tipo: "alerta",
-        mensagem: `Os arquivos do tipo .${extensoesBloqueadas.join(", .")} não são permitidos.`,
+        mensagem: `Os arquivos do tipo .${Array.from(extensoesBloqueadas).join(", .")} não são permitidos.`,
       });
     }
   }

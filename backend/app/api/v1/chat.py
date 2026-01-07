@@ -1,13 +1,10 @@
 from fastapi import APIRouter
 from pydantic import BaseModel
 
+from ...schemas.schema_chat import MensagemTemplate
+
 
 router = APIRouter()
-
-
-class MensagemTemplate(BaseModel):
-    sender: str
-    mensagem: str
 
 
 @router.post("/sendmessage")
