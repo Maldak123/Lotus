@@ -24,7 +24,7 @@ export const extensionsType = {
     extensions: [".xls", ".xlsx"],
   },
   MARKDOWN: {
-    mimeTypes: ["text/markdown"],
+    mimeTypes: ["text/markdown", "text/plain"],
     bgColor: "bg-purple-500/20",
     textColor: "text-purple-500",
     extensions: [".md"],

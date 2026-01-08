@@ -9,7 +9,7 @@ export const enviarArquivos = async (arquivos: File[]) => {
     const idUnico = uuidv4();
 
     formData.append("id_arquivo", idUnico);
-    formData.append("sessao", "teste");
+    formData.append("sessao", sessionStorage.getItem('sessaoId') || "teste");
     formData.append("file", arq);
 
     const response = await fetch(`${API_URL}/files/sendfiles`, {

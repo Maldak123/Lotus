@@ -8,8 +8,8 @@ interface AddFileProps {
 }
 
 const AddFile = ({ changeFile }: AddFileProps) => {
-  const mimeTypes = Object.values(extensionsType)
-    .flatMap((info) => info.mimeTypes)
+  const tiposAceitos = Object.values(extensionsType)
+    .flatMap((info) => [...info.mimeTypes, ...info.extensions])
     .join(",");
 
   return (
@@ -28,7 +28,7 @@ const AddFile = ({ changeFile }: AddFileProps) => {
         className="hidden"
         type="file"
         id="input_file"
-        accept={mimeTypes}
+        accept={tiposAceitos}
         multiple
       />
     </>

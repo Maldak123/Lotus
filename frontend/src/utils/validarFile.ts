@@ -6,7 +6,7 @@ interface validarFileProps {
 }
 
 export const validarFile = ({ e }: validarFileProps) => {
-  const TAMANHO_ARQUIVO = 5242880;
+  const TAMANHO_ARQUIVO = 10485760;
   const arquivosBloqueados: string[] = [];
   const extensoesBloqueadas: Set<string> = new Set;
   const alertas: AlertaType[] = [];
@@ -22,6 +22,7 @@ export const validarFile = ({ e }: validarFileProps) => {
 
     arquivos.forEach((e) => {
       const mimeType = getArchiveType(e.type);
+      const extensao = `.${e.name.split(".")[-1]}`
 
       if (e.size > TAMANHO_ARQUIVO) {
         arquivosBloqueados.push(e.name);

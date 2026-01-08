@@ -4,6 +4,8 @@ from typing import Dict
 
 from fastapi import UploadFile, File, Form, APIRouter, HTTPException, status
 
+from ...services.redis_cache import RedisCache
+
 from ...services.file_parser import FileParser
 from ...schemas.schemas_request import (
     RemoveFileRequest,
@@ -36,12 +38,20 @@ async def receive_files(
     sessao: str = Form(...),
     file: UploadFile = File(...),
 ):
-    str_id = str(id_arquivo)
+    doc_request = ArquivoComMetadata(
+        id_arquivo=str(id_arquivo), sessao=sessao, file=file
+    )
+    doc = FileParser(doc_request)
 
-    doc_request = ArquivoComMetadata(id_arquivo=str_id, sessao=sessao, file=file)
-    doc = FileParser(doc_request.file)
+    # try:
     doc_chunks = doc.processar_arquivo()
 
+    doc_cache = RedisCache(doc_chunks)
+    embeddings = doc_cache.cache_documents()
+
+    # except Exception as e:
+    #     print(f"Erro ao processar arquivo: {e}")
+    #     raise HTTPException(status_code=500, detail="Erro interno ao processar arquivo")
 
     return RetornoRequest(
         status=200,
