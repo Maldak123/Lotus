@@ -1,11 +1,20 @@
+import io
 from pathlib import Path
+import time
 from uuid import UUID
 from typing import Dict
 
-from fastapi import UploadFile, File, Form, APIRouter, HTTPException, status
+from fastapi import (
+    BackgroundTasks,
+    UploadFile,
+    File,
+    Form,
+    APIRouter,
+    HTTPException,
+    status,
+)
 
 from ...services.redis_cache import RedisCache
-
 from ...services.file_parser import FileParser
 from ...schemas.schemas_request import (
     RemoveFileRequest,
@@ -32,26 +41,51 @@ def criar_documento_retorno(doc: ArquivoComMetadata) -> DocumentoRetornoRequest:
     )
 
 
+def processar_arquivo(doc_request: ArquivoComMetadata):
+
+    doc = FileParser(doc_request)
+
+    # try:
+    start = time.time()
+
+    start_docs = time.time()
+    doc_chunks = doc.processar_arquivo()
+    end_docs = time.time()
+    print(f"Total Docs: {end_docs - start_docs:.4f}")
+
+    doc_cache = RedisCache(doc_chunks)
+
+    start_emb = time.time()
+    embeddings = doc_cache.cache_documents()
+    end_emb = time.time()
+    print(f"Total Embs: {end_emb - start_emb:.4f}")
+
+    end = time.time()
+
+    print(f"Total: {end - start:.4f}")
+
+    print(f"Arquivo processado e cacheado com sucesso. Embeddings: {len(embeddings)}")
+
+    # except Exception as e:
+    #     print(f"Erro ao processar arquivo: {e}")
+
+
 @router.post("/sendfiles")
 async def receive_files(
+    background_tasks: BackgroundTasks,
     id_arquivo: UUID = Form(...),
     sessao: str = Form(...),
     file: UploadFile = File(...),
 ):
+    doc_content = await file.read()
+    f = io.BytesIO(doc_content)
+    f.seek(0)
+
     doc_request = ArquivoComMetadata(
-        id_arquivo=str(id_arquivo), sessao=sessao, file=file
+        id_arquivo=str(id_arquivo), sessao=sessao, file=file, file_content=f
     )
-    doc = FileParser(doc_request)
 
-    # try:
-    doc_chunks = doc.processar_arquivo()
-
-    doc_cache = RedisCache(doc_chunks)
-    embeddings = doc_cache.cache_documents()
-
-    # except Exception as e:
-    #     print(f"Erro ao processar arquivo: {e}")
-    #     raise HTTPException(status_code=500, detail="Erro interno ao processar arquivo")
+    background_tasks.add_task(processar_arquivo, doc_request)
 
     return RetornoRequest(
         status=200,

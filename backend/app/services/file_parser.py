@@ -1,4 +1,3 @@
-from fastapi import UploadFile
 from langchain_core.documents import Document
 from langchain_unstructured import UnstructuredLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
@@ -11,14 +10,14 @@ class FileParser:
         self.arquivo = arquivo
 
     def processar_arquivo(self):
+
         loader = UnstructuredLoader(
-            file=self.arquivo.file.file,
+            file=self.arquivo.file_content,
             metadata_filename=self.arquivo.file.filename,
             mode="single",
-            strategy="fast"
         )
-        data: list[Document] = loader.load()
 
+        data: list[Document] = loader.load()
         docs = []
 
         text_splitter = RecursiveCharacterTextSplitter(

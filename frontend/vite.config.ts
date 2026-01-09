@@ -7,7 +7,8 @@ import path from "path";
 export default defineConfig({
 	plugins: [react(), tailwindcss()],
 	server: {
-		allowedHosts: [".ngrok-free.dev"],
+		port: 5173,
+		strictPort: false,
 		host: true
 	},
 	resolve: {

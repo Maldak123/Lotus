@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import IO, Optional
 from fastapi import UploadFile
 from pydantic import BaseModel
 
@@ -19,10 +19,11 @@ class RetornoRequest(BaseModel):
 
 
 class ArquivoComMetadata:
-    def __init__(self, id_arquivo: str, sessao: str, file: UploadFile):
+    def __init__(self, id_arquivo: str, sessao: str, file: UploadFile, file_content: IO[bytes]):
         self.id_arquivo = id_arquivo
         self.sessao = sessao
         self.file = file
+        self.file_content = file_content
 
 
 class RemoveFileRequest(BaseModel):

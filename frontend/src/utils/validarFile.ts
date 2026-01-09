@@ -6,7 +6,7 @@ interface validarFileProps {
 }
 
 export const validarFile = ({ e }: validarFileProps) => {
-  const TAMANHO_ARQUIVO = 10485760;
+  const TAMANHO_ARQUIVO = 5242880;
   const arquivosBloqueados: string[] = [];
   const extensoesBloqueadas: Set<string> = new Set;
   const alertas: AlertaType[] = [];
