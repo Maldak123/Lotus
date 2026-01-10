@@ -1,8 +1,6 @@
 import io
-from pathlib import Path
-import time
+import re
 from uuid import UUID
-from typing import Dict
 
 from fastapi import (
     BackgroundTasks,
@@ -14,98 +12,69 @@ from fastapi import (
     status,
 )
 
-from ...services.redis_cache import RedisCache
-from ...services.file_parser import FileParser
+from ...services.redis_cache import redis
+from ...services.pinecone_db import pinecone
+from ...services.process_file import processar_arquivo
+
 from ...schemas.schemas_request import (
+    MetadataFile,
     RemoveFileRequest,
-    RetornoRequest,
-    DocumentoRetornoRequest,
-    ArquivoComMetadata,
+    ReturnRequest,
 )
 
+from ...utils.create_req_return import create_request_return
+from ...utils.validations import Validations
+
+
 router = APIRouter()
-
-files_db: Dict[str, ArquivoComMetadata] = {}
-
-
-def criar_documento_retorno(doc: ArquivoComMetadata) -> DocumentoRetornoRequest:
-    extensao = Path(doc.file.filename).suffix
-
-    return DocumentoRetornoRequest(
-        id_arquivo=doc.id_arquivo,
-        sessao=doc.sessao,
-        filename=doc.file.filename,
-        content_type=doc.file.content_type,
-        tamanho=doc.file.size,
-        extensao=extensao,
-    )
-
-
-def processar_arquivo(doc_request: ArquivoComMetadata):
-
-    doc = FileParser(doc_request)
-
-    # try:
-    start = time.time()
-
-    start_docs = time.time()
-    doc_chunks = doc.processar_arquivo()
-    end_docs = time.time()
-    print(f"Total Docs: {end_docs - start_docs:.4f}")
-
-    doc_cache = RedisCache(doc_chunks)
-
-    start_emb = time.time()
-    embeddings = doc_cache.cache_documents()
-    end_emb = time.time()
-    print(f"Total Embs: {end_emb - start_emb:.4f}")
-
-    end = time.time()
-
-    print(f"Total: {end - start:.4f}")
-
-    print(f"Arquivo processado e cacheado com sucesso. Embeddings: {len(embeddings)}")
-
-    # except Exception as e:
-    #     print(f"Erro ao processar arquivo: {e}")
 
 
 @router.post("/sendfiles")
 async def receive_files(
     background_tasks: BackgroundTasks,
-    id_arquivo: UUID = Form(...),
-    sessao: str = Form(...),
+    file_id: UUID = Form(...),
+    session: str = Form(...),
     file: UploadFile = File(...),
 ):
-    doc_content = await file.read()
-    f = io.BytesIO(doc_content)
+    error_msg = None
+    if file.size > 5242880:
+        error_msg = "Os documentos devem ter no máximo 5MB."
+    elif not Validations.mime_types.count(file.content_type):
+        error_msg = "Arquivo inválido."
+    elif not re.match(Validations.session_validation, session):
+        error_msg = "ID de sessão inválido."
+
+    if error_msg:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=ReturnRequest(
+                status=400,
+                mensagem=error_msg,
+                documento=create_request_return(
+                    MetadataFile(file_id=str(file_id), session=session, file=file)
+                ),
+            ).model_dump(),
+        )
+
+    doc_bytes = await file.read()
+    f = io.BytesIO(doc_bytes)
     f.seek(0)
 
-    doc_request = ArquivoComMetadata(
-        id_arquivo=str(id_arquivo), sessao=sessao, file=file, file_content=f
+    doc_request = MetadataFile(
+        file_id=str(file_id), session=session, file=file, file_content=f
     )
 
     background_tasks.add_task(processar_arquivo, doc_request)
 
-    return RetornoRequest(
+    return ReturnRequest(
         status=200,
-        documento=criar_documento_retorno(doc_request),
+        documento=create_request_return(doc_request),
     ).model_dump()
 
 
 @router.delete("/removefile")
 async def remove_file(request: RemoveFileRequest):
-    arquivo_removido = files_db.pop(request.id_exclusao, None)
+    redis.delete_document_cache(request.session_id, request.file_id)
+    pinecone.delete_document(request.session_id, request.file_id)
 
-    if not arquivo_removido:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Arquivo não encontrado"
-        )
-
-    print(f"Removido: {arquivo_removido.id_arquivo}")
-
-    return RetornoRequest(
-        status=200,
-        mensagem="Arquivo removido.",
-        documento=criar_documento_retorno(arquivo_removido),
-    ).model_dump()
+    return ReturnRequest(status=200, mensagem="Arquivo removido.").model_dump()

@@ -1,8 +1,8 @@
 export interface FileData {
   status: number;
   documento: {
-    id_arquivo: string;
-    sessao: string;
+    file_id: string;
+    session: string;
     filename: string;
     content_type: string;
     tamanho: number;

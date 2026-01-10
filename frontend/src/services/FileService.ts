@@ -8,8 +8,8 @@ export const enviarArquivos = async (arquivos: File[]) => {
     const formData = new FormData();
     const idUnico = uuidv4();
 
-    formData.append("id_arquivo", idUnico);
-    formData.append("sessao", sessionStorage.getItem('sessaoId') || "teste");
+    formData.append("file_id", idUnico);
+    formData.append("session", sessionStorage.getItem("sessionId") || "teste");
     formData.append("file", arq);
 
     const response = await fetch(`${API_URL}/files/sendfiles`, {
@@ -24,15 +24,16 @@ export const enviarArquivos = async (arquivos: File[]) => {
   return respostas;
 };
 
-
-export const apagarArquivo = async (id: string) => {
+export const apagarArquivo = async (file_id: string, session_id: string) => {
+  console.log(session_id);
+  
   const response = await fetch(`${API_URL}/files/removefile`, {
     method: "DELETE",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ id_exclusao: id }),
+    body: JSON.stringify({ file_id: file_id, session_id: session_id }),
   });
 
-  return await response.json()
+  return await response.json();
 };

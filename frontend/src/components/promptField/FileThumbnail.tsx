@@ -45,7 +45,9 @@ const FileThumbnail = ({ arquivo, remover }: FileThumbnailProps) => {
               >
                 <div className="flex items-center gap-3">
                   <div className="flex flex-col gap-1">
-                    <FileThumbnailIcon extension={arquivo.documento.content_type} />
+                    <FileThumbnailIcon
+                      extension={arquivo.documento.content_type}
+                    />
 
                     <div className="flex flex-col gap-1">
                       <span className="w-32 truncate text-sm font-medium text-white">
@@ -60,7 +62,7 @@ const FileThumbnail = ({ arquivo, remover }: FileThumbnailProps) => {
                 </div>
 
                 <button
-                  onClick={() => remover(arquivo.documento.id_arquivo, index)}
+                  onClick={() => remover(arquivo.documento.file_id, index)}
                   className="text-gray-500 transition-colors hover:text-white"
                 >
                   <X size={18} />

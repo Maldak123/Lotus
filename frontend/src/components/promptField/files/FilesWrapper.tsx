@@ -5,7 +5,7 @@ import Files from "./Files";
 import { useFilePreview } from "@/contexts/FilePreviewContext";
 
 interface FilesWrapperProps {
-  remover: (id: string, index: number) => void;
+  remover: (file_id: string, session_id: string) => void;
 }
 
 const FilesWrapper = ({ remover }: FilesWrapperProps) => {
@@ -28,7 +28,6 @@ const FilesWrapper = ({ remover }: FilesWrapperProps) => {
             return (
               <Files
                 key={index}
-                index={index}
                 arquivo={file}
                 removerArquivo={remover}
               />

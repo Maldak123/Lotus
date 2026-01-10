@@ -22,11 +22,11 @@ const PromptField = () => {
   //   }
   // }, [files, setFilesPreview, setFiles]);
 
-  const removerArquivo = (id: string, index: number) => {
-    apagarArquivo(id);
+  const removerArquivo = (file_id: string, session_id: string) => {
+    apagarArquivo(file_id, session_id);
 
     setFilesPreview((files) =>
-      files.filter((file) => file.documento.id_arquivo !== id),
+      files.filter((file) => file.documento.file_id !== file_id),
     );
   };
 

@@ -3,28 +3,35 @@ from fastapi import UploadFile
 from pydantic import BaseModel
 
 
-class DocumentoRetornoRequest(BaseModel):
-    id_arquivo: str
-    sessao: str
+class DocumentReturnRequest(BaseModel):
+    file_id: str
+    session: str
     filename: str
     content_type: str
     tamanho: int
     extensao: str
 
 
-class RetornoRequest(BaseModel):
+class ReturnRequest(BaseModel):
     status: int
     mensagem: Optional[str] = None
-    documento: Optional[DocumentoRetornoRequest] = None
+    documento: Optional[DocumentReturnRequest] = None
 
 
-class ArquivoComMetadata:
-    def __init__(self, id_arquivo: str, sessao: str, file: UploadFile, file_content: IO[bytes]):
-        self.id_arquivo = id_arquivo
-        self.sessao = sessao
+class MetadataFile:
+    def __init__(
+        self,
+        file_id: str,
+        session: str,
+        file: UploadFile,
+        file_content: Optional[IO[bytes]] = None,
+    ):
+        self.file_id = file_id
+        self.session = session
         self.file = file
         self.file_content = file_content
 
 
 class RemoveFileRequest(BaseModel):
-    id_exclusao: str
+    file_id: str
+    session_id: str

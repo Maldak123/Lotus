@@ -5,8 +5,7 @@ import { X } from "lucide-react";
 
 interface FilesProps {
   arquivo: FileData;
-  removerArquivo: (id: string, index: number) => void;
-  index: number;
+  removerArquivo: (file_id: string, session_id: string) => void;
 }
 
 const FileIcon = ({ extension }: { extension: string }) => {
@@ -23,7 +22,7 @@ const FileIcon = ({ extension }: { extension: string }) => {
   }
 };
 
-const Files = ({ arquivo, removerArquivo, index }: FilesProps) => {
+const Files = ({ arquivo, removerArquivo }: FilesProps) => {
   return (
     <div className="flex min-w-64 items-center justify-between rounded-lg border border-[#3c3c3c] bg-[#252525] p-3 lg:min-w-full">
       <div className="flex items-center gap-3">
@@ -43,7 +42,7 @@ const Files = ({ arquivo, removerArquivo, index }: FilesProps) => {
       </div>
 
       <button
-        onClick={() => removerArquivo(arquivo.documento.id_arquivo, index)}
+        onClick={() => removerArquivo(arquivo.documento.file_id, arquivo.documento.session)}
         className="text-gray-500 transition-colors hover:text-white"
       >
         <X size={18} />

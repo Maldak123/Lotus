@@ -7,10 +7,10 @@ import ApplicationWrapper from "./components/AppWrapper/ApplicationWrapper";
 
 const App = () => {
   useEffect(() => {
-    const sessaoHistorico = sessionStorage.getItem("sessaoId");
+    const sessionHistorico = sessionStorage.getItem("sessionId");
 
-    if (!sessaoHistorico) {
-      sessionStorage.setItem("sessaoId", `${uuidv4()}&&${Date.now()}`);
+    if (!sessionHistorico) {
+      sessionStorage.setItem("sessionId", `${uuidv4()}&&${Date.now()}`);
     }
   }, []);
 
