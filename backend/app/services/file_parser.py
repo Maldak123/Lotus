@@ -6,11 +6,11 @@ from ..schemas.schemas_request import MetadataFile
 
 
 class FileParser:
-    def __init__(self, arquivo: MetadataFile):
-        self.arquivo = arquivo
+    def __init__(self, file: MetadataFile):
+        self.file = file
         self.loader = UnstructuredLoader(
-            file=self.arquivo.file_content,
-            metadata_filename=self.arquivo.file.filename,
+            file=self.file.file_content,
+            metadata_filename=self.file.file.filename,
             mode="single",
             strategy="fast",
         )
@@ -25,9 +25,9 @@ class FileParser:
 
         for doc in data:
             metadados = {
-                "source": self.arquivo.file.filename,
-                "file_id": self.arquivo.file_id,
-                "session_id": self.arquivo.session,
+                "source": self.file.file.filename,
+                "file_id": self.file.file_id,
+                "session_id": self.file.session,
                 "page_number": doc.metadata.get("page_number"),
                 "sheet_name": doc.metadata.get("sheet_name"),
             }

@@ -1,11 +1,11 @@
 from pathlib import Path
-from ..schemas.schemas_request import MetadataFile, DocumentReturnRequest
+from ..schemas.schemas_request import MetadataFile, DocumentResponse
 
 
-def create_request_return(doc: MetadataFile) -> DocumentReturnRequest:
+def create_request_return(doc: MetadataFile) -> DocumentResponse:
     extensao = Path(doc.file.filename).suffix
 
-    return DocumentReturnRequest(
+    return DocumentResponse(
         file_id=doc.file_id,
         session=doc.session,
         filename=doc.file.filename,

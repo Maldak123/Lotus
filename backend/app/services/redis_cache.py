@@ -1,50 +1,28 @@
-import concurrent.futures
+import redis
 
 from fastapi import HTTPException, status
+from langchain_community.storage import RedisStore
 
-from langchain_core.documents import Document
-
-from ..utils.create_cached_embeddings import create_cache_backed_embeddings
-from ..utils.get_redis import (
-    get_redis_client,
-    get_redis_store,
-)
-
-from ..config.embeddings import embeddings
-from ..schemas.schemas_request import ReturnRequest
+from ..config.config import config
+from ..schemas.schemas_request import Response
 
 
 class RedisCaching:
     def __init__(self):
-        self.redis_store = get_redis_store()
-        self.redis_client = get_redis_client()
+        self.redis_client = self._get_redis_client()
+        self.redis_store = self.get_redis_store()
 
-    def cache_documents(self, doc_chunks: list[Document]):
-        conteudo_documentos: list[str] = [doc.page_content for doc in doc_chunks]
-        batches: list[list[str]] = [
-            conteudo_documentos[i : i + 128]
-            for i in range(0, len(conteudo_documentos), 128)
-        ]
+    def _get_redis_client(self):
+        return redis.Redis(
+            host=config.REDIS_HOST_NAME,
+            port=config.REDIS_PORT,
+            decode_responses=False,
+            username="default",
+            password=config.REDIS_PASSWORD,
+        )
 
-        def gen_embeddings(batch):
-            session_id = doc_chunks[0].metadata.get("session_id")
-            file_id = doc_chunks[0].metadata.get("file_id")
-            unified_namespace = f"{session_id}:{file_id}"
-
-            cached_embeddings = create_cache_backed_embeddings(
-                underlying_embeddings=embeddings.voyage_embeddings,
-                document_embedding_cache=self.redis_store,
-                namespace=unified_namespace,
-            )
-
-            return cached_embeddings.embed_documents(batch)
-
-        with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
-            list(executor.map(gen_embeddings, batches))
-
-    def delete_document_cache(self, session_id: str, file_id: str):
-        pattern = f"*{session_id}:{file_id}*"
-        return self._delete_by_pattern(pattern, "Arquivo não encontrado no cache.")
+    def get_redis_store(self):
+        return RedisStore(client=self.redis_client)
 
     def delete_session_cache(self, session_id: str):
         pattern = f"*{session_id}:*"
@@ -55,11 +33,11 @@ class RedisCaching:
 
         if keys_to_delete:
             self.redis_client.delete(*keys_to_delete)
-            return ReturnRequest(status=200, mensagem="Arquivo removido.")
+            return Response(status=200, mensagem="Arquivo removido.")
         else:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail=ReturnRequest(status=404, mensagem=error_msg).model_dump(),
+                detail=Response(status=404, mensagem=error_msg).model_dump(),
             )
 
 

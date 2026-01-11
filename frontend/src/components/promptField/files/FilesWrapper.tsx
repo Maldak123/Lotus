@@ -9,9 +9,9 @@ interface FilesWrapperProps {
 }
 
 const FilesWrapper = ({ remover }: FilesWrapperProps) => {
-  const { filesPreview } = useFilePreview()
+  const { filesPreview } = useFilePreview();
 
-  // const arquivos = arquivo && Array.from(arquivo);
+  // const arquivos = file && Array.from(file);
   const arquivosExistentes: string[] = [];
   const alertaArquivoExistente: AlertaType[] = [
     {
@@ -25,13 +25,7 @@ const FilesWrapper = ({ remover }: FilesWrapperProps) => {
       {filesPreview &&
         filesPreview?.map((file, index) => {
           if (file.status === 200) {
-            return (
-              <Files
-                key={index}
-                arquivo={file}
-                removerArquivo={remover}
-              />
-            );
+            return <Files key={index} file={file} removerArquivo={remover} />;
           } else {
             console.log(file);
 

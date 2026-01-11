@@ -3,7 +3,7 @@ from fastapi import UploadFile
 from pydantic import BaseModel
 
 
-class DocumentReturnRequest(BaseModel):
+class DocumentResponse(BaseModel):
     file_id: str
     session: str
     filename: str
@@ -12,10 +12,10 @@ class DocumentReturnRequest(BaseModel):
     extensao: str
 
 
-class ReturnRequest(BaseModel):
+class Response(BaseModel):
     status: int
     mensagem: Optional[str] = None
-    documento: Optional[DocumentReturnRequest] = None
+    documento: Optional[DocumentResponse] = None
 
 
 class MetadataFile:

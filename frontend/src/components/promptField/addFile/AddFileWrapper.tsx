@@ -34,14 +34,14 @@ const AddFileWrapper = ({ setAlerta }: AddFileWrapperProps) => {
   }, [files, processarArquivos]);
 
   const onChangeFile = (evento: React.ChangeEvent<HTMLInputElement>) => {
-    const arquivo = validarFile({ e: evento });
+    const file = validarFile({ e: evento });
 
-    if (arquivo.alertas) {
-      setAlerta(arquivo.alertas);
+    if (file.alertas) {
+      setAlerta(file.alertas);
     }
 
-    filterSetFiles(arquivo.arquivosFiltrados);
-    evento.target.value = ""
+    filterSetFiles(file.arquivosFiltrados);
+    evento.target.value = "";
   };
 
   return (
