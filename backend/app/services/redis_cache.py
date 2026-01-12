@@ -13,6 +13,7 @@ from ..schemas.schemas_request import Response
 class RedisCaching:
     def __init__(self):
         self.redis_store = self.get_redis_embeddings_store()
+        self.batch_size = 128
 
     def get_redis_client(self, *, host: str, port: int, password: str):
         return redis.Redis(

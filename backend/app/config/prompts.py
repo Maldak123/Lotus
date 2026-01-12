@@ -20,7 +20,7 @@ class Prompts:
         )
 
     def get_contextualized_q_prompt(self):
-        ChatPromptTemplate(
+        return ChatPromptTemplate(
             [
                 ("system", self.system_prompt),
                 MessagesPlaceholder("chat_history"),
@@ -29,7 +29,7 @@ class Prompts:
         )
 
     def get_qa_prompt(self):
-        ChatPromptTemplate(
+        return ChatPromptTemplate(
             [
                 ("system", self.qa_prompt),
                 MessagesPlaceholder("chat_history"),

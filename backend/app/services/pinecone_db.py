@@ -50,13 +50,19 @@ class PineconeConnection:
     def _armazenar_vectorstore(self, batch: list[Document]) -> None:
         session_id = batch[0].metadata.get("session_id")
 
-        embedder = cache_redis.get_cached_embedder(unified_namespace=session_id)
+        textos = [doc.page_content for doc in batch]
+        metadata = [doc.metadata for doc in batch]
+
+        embedder = cache_redis.get_cached_embedder(namespace=session_id)
         vectorstore = self.get_vectorstore(embedder=embedder)
 
         try:
-            vectorstore.add_documents(documents=batch, namespace=session_id)
+            # (documents=batch, namespace=session_id)
+            print("entrou")
+            vectorstore.add_texts(texts=textos, metadatas=metadata, namespace=session_id)
+            print("saiu")
         except Exception as e:
-            return HTTPException(
+            raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail=Response(
                     status=500, mensagem=f"Erro ao armazenar file: {e}"
