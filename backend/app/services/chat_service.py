@@ -21,15 +21,13 @@ class ChatService:
     def __init__(self, session_id: str):
         self.session_id = session_id
         self.retriever = pinecone.get_vectorstore(
-            embedder=cache_redis.get_cached_embedder(namespace=session_id)
+            embedder=cache_redis.get_cached_embedder(namespace=session_id),
+            namespace=session_id,
         )
         self.gemini = ChatGoogleGenerativeAI(
             model="gemini-2.5-flash", api_key=config.GOOGLE_API_KEY
         )
         self.chat_history = []
-
-    def _get_retriever(self):
-        return self.retriever.bind(filter={"session_id": self.session_id})
 
     def _create_chain(self):
         contextualize_q_prompt_system = Prompts().get_contextualized_q_prompt()
@@ -37,7 +35,7 @@ class ChatService:
 
         history_aware_retriever = create_history_aware_retriever(
             llm=self.gemini,
-            retriever=self._get_retriever(),
+            retriever=self.retriever,
             prompt=contextualize_q_prompt_system,
         )
 
@@ -60,5 +58,7 @@ class ChatService:
         rag_chain = self._create_chain()
 
         answer = rag_chain.invoke({"input": message, "chat_history": history})
+
+        print(answer)
 
         return MensagemTemplate(session_id=self.session_id, mensagem=answer["answer"])

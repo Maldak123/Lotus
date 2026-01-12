@@ -38,10 +38,11 @@ class PineconeConnection:
         else:
             print(f"Conectando-se a {self.index_name}")
 
-    def get_vectorstore(self, *, embedder: CacheBackedEmbeddings) -> PineconeHybridSearchRetriever:
+    def get_vectorstore(self, *, embedder: CacheBackedEmbeddings, namespace: str) -> PineconeHybridSearchRetriever:
         return PineconeHybridSearchRetriever(
             embeddings=embedder,
             sparse_encoder=self.bm25_encoder,
+            namespace=namespace,
             index=self.index,
             top_k=5,
             alpha=0.5
@@ -49,12 +50,13 @@ class PineconeConnection:
 
     def _armazenar_vectorstore(self, batch: list[Document]) -> None:
         session_id = batch[0].metadata.get("session_id")
+        print(session_id)
 
         textos = [doc.page_content for doc in batch]
         metadata = [doc.metadata for doc in batch]
 
         embedder = cache_redis.get_cached_embedder(namespace=session_id)
-        vectorstore = self.get_vectorstore(embedder=embedder)
+        vectorstore = self.get_vectorstore(embedder=embedder, namespace=session_id)
 
         try:
             # (documents=batch, namespace=session_id)
