@@ -8,4 +8,5 @@ class Embeddings:
         model="voyage-3.5", api_key=config.VOYAGE_API_KEY, output_dimension=1024
     )
 
+
 embeddings = Embeddings()

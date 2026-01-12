@@ -2,5 +2,5 @@ from pydantic import BaseModel
 
 
 class MensagemTemplate(BaseModel):
-    sender: str
+    session_id: str
     mensagem: str

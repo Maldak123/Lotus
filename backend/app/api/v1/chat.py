@@ -1,7 +1,8 @@
 from fastapi import APIRouter
-from pydantic import BaseModel
 
 from ...schemas.schema_chat import MensagemTemplate
+
+from ...services.chat_service import ChatService
 
 
 router = APIRouter()
@@ -9,8 +10,5 @@ router = APIRouter()
 
 @router.post("/sendmessage")
 async def message(request: MensagemTemplate):
-    # userTemplate = MensagemTemplate(sender="user", message=request.mensagem)
-    systemTemplate = MensagemTemplate(sender="system", mensagem="recebido")
-
-    print(systemTemplate.model_dump())
-    return systemTemplate.model_dump()
+    chat = ChatService(session_id=request.session_id)
+    chat.generate_response(request.mensagem)

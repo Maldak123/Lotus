@@ -7,6 +7,10 @@ class Config(BaseSettings):
     REDIS_PASSWORD: str
     REDIS_PORT: int
 
+    REDIS_CHAT_HOST_NAME: str
+    REDIS_CHAT_PASSWORD: str
+    REDIS_CHAT_PORT: int
+
     GOOGLE_API_KEY: str
     VOYAGE_API_KEY: str
 
