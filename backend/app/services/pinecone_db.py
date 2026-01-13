@@ -19,62 +19,29 @@ class PineconeConnection:
     def __init__(
         self,
     ):
-        self.pc = Pinecone(api_key=config.PINECONE_API_KEY)
-        self.index_name = config.PINECONE_INDEX_NAME
+        self._pc = Pinecone(api_key=config.PINECONE_API_KEY)
+        self._index_name = config.PINECONE_INDEX_NAME
         self._verify_and_create_index()
-        self.index = self.pc.Index(self.index_name)
-        self.bm25_encoder = BM25Encoder().default()
-        self.batch_size = 128
+        self._index = self._pc.Index(self._index_name)
+        self._bm25_encoder = BM25Encoder().default()
+        self._batch_size = 128
 
-    def _verify_and_create_index(self) -> None:
-        if not self.pc.has_index(self.index_name):
-            self.pc.create_index(
-                name=self.index_name,
-                dimension=1024,
-                metric="dotproduct",
-                spec=ServerlessSpec(cloud="aws", region="us-east-1"),
-            )
-            print(f"Índice {self.index_name} criado.")
-        else:
-            print(f"Conectando-se a {self.index_name}")
-
-    def get_vectorstore(self, *, embedder: CacheBackedEmbeddings, namespace: str) -> PineconeHybridSearchRetriever:
+    def get_vectorstore(
+        self, *, embedder: CacheBackedEmbeddings, namespace: str
+    ) -> PineconeHybridSearchRetriever:
         return PineconeHybridSearchRetriever(
             embeddings=embedder,
-            sparse_encoder=self.bm25_encoder,
+            sparse_encoder=self._bm25_encoder,
             namespace=namespace,
-            index=self.index,
+            index=self._index,
             top_k=5,
-            alpha=0.5
+            alpha=0.5,
         )
-
-    def _armazenar_vectorstore(self, batch: list[Document]) -> None:
-        session_id = batch[0].metadata.get("session_id")
-        print(session_id)
-
-        textos = [doc.page_content for doc in batch]
-        metadata = [doc.metadata for doc in batch]
-
-        embedder = cache_redis.get_cached_embedder(namespace=session_id)
-        vectorstore = self.get_vectorstore(embedder=embedder, namespace=session_id)
-
-        try:
-            # (documents=batch, namespace=session_id)
-            print("entrou")
-            vectorstore.add_texts(texts=textos, metadatas=metadata, namespace=session_id)
-            print("saiu")
-        except Exception as e:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=Response(
-                    status=500, mensagem=f"Erro ao armazenar file: {e}"
-                ).model_dump(),
-            )
 
     def armazenar_embeddings(self, doc_chunks: list[Document]) -> None:
         batches = [
-            doc_chunks[i : i + self.batch_size]
-            for i in range(0, len(doc_chunks), self.batch_size)
+            doc_chunks[i : i + self._batch_size]
+            for i in range(0, len(doc_chunks), self._batch_size)
         ]
 
         with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
@@ -82,10 +49,7 @@ class PineconeConnection:
 
     def delete_document(self, session_id: str, file_id: str):
         try:
-            self.index.delete(
-                namespace=session_id,
-                filter={"file_id": file_id}
-            )
+            self._index.delete(namespace=session_id, filter={"file_id": file_id})
             return Response(status=200, mensagem=f"Documento {file_id} removido")
         except Exception as e:
             raise HTTPException(
@@ -97,13 +61,13 @@ class PineconeConnection:
 
     def delete_session(self, session_id: str) -> Response:
         try:
-            stats = self.index.describe_index_stats()
+            stats = self._index.describe_index_stats()
 
             all_namespaces = stats.get("namespaces", {}).keys()
             targets = [ns for ns in all_namespaces if ns.startswith(f"{session_id}:")]
 
             for ns in targets:
-                self.index.delete_namespace(namespace=ns)
+                self._index.delete_namespace(namespace=ns)
 
             return Response(status=200, mensagem=f"Sessão {session_id} removida.")
         except Exception as e:
@@ -111,6 +75,39 @@ class PineconeConnection:
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail=Response(
                     status=500, mensagem=f"Erro ao deletar sessão: {e}"
+                ).model_dump(),
+            )
+
+    def _verify_and_create_index(self) -> None:
+        if not self._pc.has_index(self._index_name):
+            self._pc.create_index(
+                name=self._index_name,
+                dimension=1024,
+                metric="dotproduct",
+                spec=ServerlessSpec(cloud="aws", region="us-east-1"),
+            )
+            print(f"Índice {self._index_name} criado.")
+        else:
+            print(f"Conectando-se a {self._index_name}")
+
+    def _armazenar_vectorstore(self, batch: list[Document]) -> None:
+        session_id = batch[0].metadata.get("session_id")
+
+        textos = [doc.page_content for doc in batch]
+        metadata = [doc.metadata for doc in batch]
+
+        embedder = cache_redis.get_cached_embedder(namespace=session_id)
+        vectorstore = self.get_vectorstore(embedder=embedder, namespace=session_id)
+
+        try:
+            vectorstore.add_texts(
+                texts=textos, metadatas=metadata, namespace=session_id
+            )
+        except Exception as e:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=Response(
+                    status=500, mensagem=f"Erro ao armazenar file: {e}"
                 ).model_dump(),
             )
 

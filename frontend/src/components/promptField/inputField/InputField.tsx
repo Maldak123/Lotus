@@ -37,13 +37,14 @@ const InputField = () => {
       };
 
       setChat((prev) => [...prev, mensagemUsuario]);
+      
+      setInput("");
+      setFilesPreview([]);
+      setFiles([]);
 
       const chatData = await enviarChat(mensagemUsuario);
       setChat((prev) => [...prev, chatData]);
 
-      setInput("");
-      setFilesPreview([]);
-      setFiles([]);
     }
   };
 

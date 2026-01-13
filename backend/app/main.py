@@ -27,3 +27,4 @@ app.include_router(chat, prefix="/chat")
 @app.get("/")
 async def root():
     return {"mensagem": "Online"}
+

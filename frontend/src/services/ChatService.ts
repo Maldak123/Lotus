@@ -9,7 +9,7 @@ export const enviarChat = async (mensagem: Mensagem) => {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      sender: mensagem.sender,
+      session_id: sessionStorage.getItem("sessionId"),
       mensagem: mensagem.mensagem,
     }),
   });

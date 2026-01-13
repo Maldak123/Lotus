@@ -10,14 +10,14 @@ from ..schemas.schemas_request import MetadataFile
 
 class FileParser:
     def __init__(self, file: MetadataFile):
-        self.file = file
-        self.text_splitter = RecursiveCharacterTextSplitter(
+        self._file = file
+        self._text_splitter = RecursiveCharacterTextSplitter(
             chunk_size=1000, chunk_overlap=100, separators=["\n\n", "\n", " ", ""]
         )
-        self.ocr = RapidOCR()
+        self._ocr = RapidOCR()
 
     def processar_arquivo(self) -> list[Document]:
-        filename = self.file.file.filename.lower()
+        filename = self._file.file.filename.lower()
 
         if filename.endswith(".pdf"):
             return self._process_pdf_custom()
@@ -26,31 +26,32 @@ class FileParser:
 
     def _process_pdf_custom(self) -> list[Document]:
         docs = []
-        with fitz.open(stream=self.file.file_content, filetype="pdf") as pdf:
+
+        with fitz.open(stream=self._file.file_content, filetype="pdf") as pdf:
             for i, page in enumerate(pdf):
                 page_text = page.get_text()
 
                 if self._tem_texto_corrompido(page_text):
-                    print(f"PDF (OCR) - Página {i+1}: Texto corrompido detectado.")
                     pix = page.get_pixmap(dpi=150)
                     page_text = self._extrair_texto_ocr(pix)
 
                 if page_text.strip():
                     metadados = {
-                        "source": self.file.file.filename,
-                        "file_id": self.file.file_id,
-                        "session_id": self.file.session,
+                        "source": self._file.file.filename,
+                        "file_id": self._file.file_id,
+                        "session_id": self._file.session,
                         "page_number": i + 1,
                     }
+
                     docs.append(Document(page_content=page_text, metadata=metadados))
 
-        return self.text_splitter.split_documents(docs)
+        return self._text_splitter.split_documents(docs)
 
     def _process_unstructured(self) -> list[Document]:
         try:
             loader = UnstructuredLoader(
-                file=self.file.file_content,
-                metadata_filename=self.file.file.filename,
+                file=self._file.file_content,
+                metadata_filename=self._file.file.filename,
                 strategy="fast",
             )
             data = loader.load()
@@ -58,17 +59,17 @@ class FileParser:
             docs = []
             for doc in data:
                 metadados = {
-                    "source": self.file.file.filename,
-                    "file_id": self.file.file_id,
-                    "session_id": self.file.session,
+                    "source": self._file.file.filename,
+                    "file_id": self._file.file_id,
+                    "session_id": self._file.session,
                     "page_number": doc.metadata.get("page_number"),
                     "sheet_name": doc.metadata.get("sheet_name"),
                 }
-                metadados = {k: v for k, v in metadados.items() if v is not None}
 
+                metadados = {k: v for k, v in metadados.items() if v is not None}
                 docs.append(Document(page_content=doc.page_content, metadata=metadados))
 
-            return self.text_splitter.split_documents(docs)
+            return self._text_splitter.split_documents(docs)
 
         except Exception as e:
             print(f"Erro no Unstructured: {e}")
@@ -85,7 +86,7 @@ class FileParser:
 
     def _extrair_texto_ocr(self, page_pixmap) -> str:
         img_bytes = page_pixmap.tobytes("png")
-        ocr_result, _ = self.ocr(img_bytes)
+        ocr_result, _ = self._ocr(img_bytes)
         if ocr_result:
             return "\n".join([item[1] for item in ocr_result])
         return ""
