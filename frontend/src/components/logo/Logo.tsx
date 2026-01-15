@@ -7,7 +7,7 @@ interface LogoProps {
   size?: number;
 }
 
-const LogoAnimated = ({ animated, size, infinite }: LogoProps) => {
+const Logo = ({ animated, size, infinite }: LogoProps) => {
   const ids = animated ? ["um", "dois", "tres", "quatro"] : [];
   const rotations = ["", "rotate-90", "rotate-45", "rotate-135"];
 
@@ -20,7 +20,7 @@ const LogoAnimated = ({ animated, size, infinite }: LogoProps) => {
         <svg
           key={index}
           id={ids[index]}
-          className={`absolute h-full ${rotation} ${infinite ? "infinite-animation" : ""}`}
+        className={`absolute h-full ${rotation} ${infinite && "infinite-animation"}`}
           viewBox="0 0 26 105"
         >
           <path
@@ -35,4 +35,4 @@ const LogoAnimated = ({ animated, size, infinite }: LogoProps) => {
   );
 };
 
-export default LogoAnimated;
+export default Logo;

@@ -13,9 +13,8 @@ class DocumentResponse(BaseModel):
 
 
 class Response(BaseModel):
-    status: int
-    mensagem: Optional[str] = None
-    documento: Optional[DocumentResponse] = None
+    status: Optional[str] = None
+    document: Optional[DocumentResponse] = None
 
 
 class MetadataFile:

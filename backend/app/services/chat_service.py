@@ -50,7 +50,7 @@ class ChatService:
         except Exception as e:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=Response(status=500, mensagem=f"Erro interno do servidor. {e}"),
+                detail=Response(mensagem=f"Erro interno do servidor. {e}"),
             )
 
         self._save_chat_history(user_msg=message, ai_msg=answer["answer"])

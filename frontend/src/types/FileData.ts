@@ -1,6 +1,6 @@
 export interface FileData {
-  status: number;
-  documento: {
+  status?: "processing" | "completed" | "error";
+  document: {
     file_id: string;
     session: string;
     filename: string;

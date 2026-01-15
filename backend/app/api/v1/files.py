@@ -14,6 +14,7 @@ from fastapi import (
 
 from ...services.pinecone_db import pinecone
 from ...services.process_file import processar_arquivo
+from ...services.redis_cache import cache_redis
 
 from ...schemas.schemas_request import (
     MetadataFile,
@@ -47,7 +48,6 @@ async def receive_files(
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=Response(
-                status=400,
                 mensagem=error_msg,
                 documento=create_request_return(
                     MetadataFile(file_id=str(file_id), session=session, file=file)
@@ -66,8 +66,8 @@ async def receive_files(
     background_tasks.add_task(processar_arquivo, doc_request)
 
     return Response(
-        status=200,
-        documento=create_request_return(doc_request),
+        status="processing",
+        document=create_request_return(doc_request),
     ).model_dump()
 
 
@@ -75,4 +75,10 @@ async def receive_files(
 async def remove_file(request: RemoveFileRequest):
     pinecone.delete_document(request.session_id, request.file_id)
 
-    return Response(status=200, mensagem="Arquivo removido.").model_dump()
+    return Response(mensagem="Arquivo removido.").model_dump()
+
+
+@router.get("/getfile/{file_id}")
+async def get_file_status(file_id: str):
+    status = cache_redis.get_file_status(file_id=file_id)
+    return {"file_id": file_id, "status": status}

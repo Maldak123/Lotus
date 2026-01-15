@@ -1,19 +1,14 @@
 import React from "react";
-import ChatWrapper from "../chat/ChatWrapper";
-import InputWrapper from "../promptField/PromptField";
-import Sidebar from "@/layout/Sidebar";
+import Header from "@/layout/Header";
 
 const ApplicationWrapper = () => {
   return (
-    <>
-      <Sidebar />
-      <main className="flex h-dvh w-full items-center justify-center">
-        <div className="grid h-full w-full grid-rows-[1fr_auto] gap-6 p-4 lg:max-w-7/10 lg:py-8">
-          <ChatWrapper />
-          <InputWrapper />
-        </div>
+    <div className="h-dvh relative">
+      <Header />
+      <main className="flex w-full items-center justify-center">
+        <div className="grid h-full w-full grid-rows-[1fr_auto] gap-6 p-4 lg:max-w-7/10 lg:py-8"></div>
       </main>
-    </>
+    </div>
   );
 };
 

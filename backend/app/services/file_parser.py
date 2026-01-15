@@ -6,6 +6,7 @@ from langchain_unstructured import UnstructuredLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 from ..schemas.schemas_request import MetadataFile
+from ..services.redis_cache import cache_redis
 
 
 class FileParser:

@@ -1,19 +1,16 @@
 import type { AlertaType } from "@/types/AlertaType";
 import { getArchiveType } from "./fileExtensions";
 
-interface validarFileProps {
-  e: React.ChangeEvent<HTMLInputElement>;
-}
 
-export const validarFile = ({ e }: validarFileProps) => {
+export const validarFile = (files: FileList) => {
   const TAMANHO_ARQUIVO = 5242880;
   const arquivosBloqueados: string[] = [];
   const extensoesBloqueadas: Set<string> = new Set;
   const alertas: AlertaType[] = [];
   let arquivosFiltrados: File[] = [];
 
-  if (e.target.files && e.target.files.length > 0) {
-    const arquivos = Array.from(e.target.files);
+  if (files && files.length > 0) {
+    const arquivos = Array.from(files);
 
     arquivosFiltrados = arquivos.filter(
       (arq) =>
@@ -22,7 +19,7 @@ export const validarFile = ({ e }: validarFileProps) => {
 
     arquivos.forEach((e) => {
       const mimeType = getArchiveType(e.type);
-      const extensao = `.${e.name.split(".")[-1]}`
+      // const extensao = `.${e.name.split(".")[-1]}`
 
       if (e.size > TAMANHO_ARQUIVO) {
         arquivosBloqueados.push(e.name);
@@ -48,5 +45,5 @@ export const validarFile = ({ e }: validarFileProps) => {
     }
   }
 
-  return { arquivosFiltrados, arquivosBloqueados, alertas };
+  return { arquivosFiltrados, alertas };
 };

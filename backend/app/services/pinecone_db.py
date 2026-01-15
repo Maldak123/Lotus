@@ -50,13 +50,11 @@ class PineconeConnection:
     def delete_document(self, session_id: str, file_id: str):
         try:
             self._index.delete(namespace=session_id, filter={"file_id": file_id})
-            return Response(status=200, mensagem=f"Documento {file_id} removido")
+            return Response(mensagem=f"Documento {file_id} removido")
         except Exception as e:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=Response(
-                    status=500, mensagem=f"Erro ao deletar file: {e}"
-                ).model_dump(),
+                detail=Response(mensagem=f"Erro ao deletar file: {e}").model_dump(),
             )
 
     def delete_session(self, session_id: str) -> Response:
@@ -69,13 +67,11 @@ class PineconeConnection:
             for ns in targets:
                 self._index.delete_namespace(namespace=ns)
 
-            return Response(status=200, mensagem=f"Sessão {session_id} removida.")
+            return Response(mensagem=f"Sessão {session_id} removida.")
         except Exception as e:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=Response(
-                    status=500, mensagem=f"Erro ao deletar sessão: {e}"
-                ).model_dump(),
+                detail=Response(mensagem=f"Erro ao deletar sessão: {e}").model_dump(),
             )
 
     def _verify_and_create_index(self) -> None:
@@ -106,9 +102,7 @@ class PineconeConnection:
         except Exception as e:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=Response(
-                    status=500, mensagem=f"Erro ao armazenar file: {e}"
-                ).model_dump(),
+                detail=Response(mensagem=f"Erro ao armazenar file: {e}").model_dump(),
             )
 
 
