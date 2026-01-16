@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 
 import File from "./File";
 import { apagarArquivo, getStatusFile } from "@/services/FileService";
@@ -13,7 +13,6 @@ const FileWrapper = ({ file }: FileWrapperProps) => {
   const { setFilesPreview } = useFilePreview();
   const { updateStatusFile } = useFilePreview();
 
-
   useEffect(() => {
     let interval: number | undefined;
     if (file.status === "processing") {
@@ -24,7 +23,7 @@ const FileWrapper = ({ file }: FileWrapperProps) => {
     }
 
     return () => clearInterval(interval);
-  }, [file.document.file_id, file.status, updateStatusFile]);
+  }, [file.document.file_id, file.status, updateStatusFile, file]);
 
   const removeFile = (file_id: string, session_id: string) => {
     apagarArquivo(file_id, session_id);

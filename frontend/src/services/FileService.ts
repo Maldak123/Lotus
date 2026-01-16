@@ -67,3 +67,19 @@ export const getStatusFile = async (file_id: string) => {
     return { file_id: file_id, status: "error" };
   }
 };
+
+export const getSessionFiles = async (session_id: string) => {
+  try {
+    const response = await fetch(`${API_URL}/files/getsessionfiles/${session_id}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "ngrok-skip-browser-warning": "8000",
+      },
+    });
+
+    return await response.json();
+  } catch {
+    return
+  }
+};

@@ -1,6 +1,5 @@
 import type { FileData } from "@/types/FileData";
 import { X } from "lucide-react";
-import React from "react";
 
 interface RemoveFileProps{
   removeFile: (file_id: string, session_id: string) => void

@@ -1,9 +1,9 @@
-import type { Mensagem } from "@/types/Mensagem";
+import type { MessageResponse } from "@/types/Mensagem";
 import React, { createContext, useContext, useState } from "react";
 
 interface ChatContextProps {
-  chat: Mensagem[];
-  setChat: React.Dispatch<React.SetStateAction<Mensagem[]>>;
+  chat: MessageResponse[];
+  setChat: React.Dispatch<React.SetStateAction<MessageResponse[]>>;
 }
 
 export const ChatContext = createContext<ChatContextProps>({
@@ -16,7 +16,7 @@ export default function ChatProvider({
 }: {
   children: React.ReactElement;
 }) {
-  const [chat, setChat] = useState<Mensagem[]>([]);
+  const [chat, setChat] = useState<MessageResponse[]>([]);
 
   return (
     <ChatContext.Provider value={{ chat, setChat }}>

@@ -1,4 +1,3 @@
-import React from 'react'
 import { getArchiveType } from '@/utils/fileExtensions';
 
 interface FileIconProps{

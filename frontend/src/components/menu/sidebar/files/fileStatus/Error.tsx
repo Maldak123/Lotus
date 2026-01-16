@@ -1,5 +1,4 @@
 import { FileWarning } from "lucide-react";
-import React from "react";
 
 const Error = () => {
   return (

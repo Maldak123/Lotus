@@ -91,3 +91,9 @@ async def get_file_status(file_id: str):
     status = cache_redis.get_file_status(file_id=file_id)
 
     return {"file_id": file_id, "status": status}
+
+
+@router.get("/getsessionfiles/{session_id}")
+async def get_session_files(session_id: str):
+    print(cache_redis.get_files_cache(session_id=session_id))
+    return cache_redis.get_files_cache(session_id=session_id)

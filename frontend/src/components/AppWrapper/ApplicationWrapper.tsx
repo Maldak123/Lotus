@@ -1,12 +1,45 @@
-import React from "react";
+import { useEffect } from "react";
 import Header from "@/layout/Header";
+import ChatWrapper from "../chat/ChatWrapper";
+import InputField from "../inputField/InputField";
+import { getSessionMessages } from "@/services/ChatService";
+import { useChat } from "@/contexts/ChatContext";
+import { getSessionFiles } from "@/services/FileService";
+import { useFilePreview } from "@/contexts/FilePreviewContext";
 
 const ApplicationWrapper = () => {
+  const { setChat } = useChat();
+  const { setFilesPreview } = useFilePreview()
+
+  useEffect(() => {
+    const sessionHistorico = sessionStorage.getItem("sessionId");
+
+    if (!sessionHistorico) {
+      return;
+    }
+
+    const fetchFiles = async(sessionHistorico: string) => {
+      const files_history = await getSessionFiles(sessionHistorico)
+      setFilesPreview(files_history)
+    }
+
+    const fetchMessages = async (sessionHistorico: string) => {
+      const chat_history = await getSessionMessages(sessionHistorico);
+      setChat(chat_history);
+    };
+
+    fetchFiles(sessionHistorico)
+    fetchMessages(sessionHistorico)
+  }, [setChat, setFilesPreview]);
+
   return (
-    <div className="h-dvh relative">
+    <div className="relative h-dvh">
       <Header />
-      <main className="flex w-full items-center justify-center">
-        <div className="grid h-full w-full grid-rows-[1fr_auto] gap-6 p-4 lg:max-w-7/10 lg:py-8"></div>
+      <main className="flex h-full w-full items-center justify-center">
+        <div className="grid h-full w-full grid-rows-[1fr_auto] gap-6 p-4 lg:max-w-7/10 lg:py-8">
+          <ChatWrapper />
+          <InputField />
+        </div>
       </main>
     </div>
   );

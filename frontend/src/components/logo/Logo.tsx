@@ -1,4 +1,3 @@
-import React from "react";
 import "./index.css";
 
 interface LogoProps {
@@ -13,14 +12,17 @@ const Logo = ({ animated, size, infinite }: LogoProps) => {
 
   return (
     <div
-      style={size ? { height: `${size}rem` } : { height: "3.25rem" }}
+      style={{
+        height: size ? `${size}rem` : "3.25rem",
+      }}
       className="relative flex aspect-square cursor-pointer items-center justify-center"
     >
       {rotations.map((rotation, index) => (
         <svg
           key={index}
           id={ids[index]}
-        className={`absolute h-full ${rotation} ${infinite && "infinite-animation"}`}
+          style={{ animationIterationCount: infinite ? "infinite" : "initial" }}
+          className={`absolute h-full ${rotation}`}
           viewBox="0 0 26 105"
         >
           <path

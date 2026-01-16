@@ -48,7 +48,7 @@ class ChatService:
 
         try:
             answer = rag_chain.invoke({"input": message, "chat_history": history})
-            print(answer['context'])
+            print([doc.metadata['source'] for doc in answer['context']])
         except Exception as e:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -57,7 +57,7 @@ class ChatService:
 
         self._save_chat_history(user_msg=message, ai_msg=answer["answer"])
 
-        return MensagemTemplate(session_id=self._session_id, mensagem=answer["answer"])
+        return MensagemTemplate(session_id=self._session_id, type="ai", content=answer["answer"])
 
     def _create_chain(self):
         contextualize_q_prompt_system = prompts.get_contextualized_q_prompt()
@@ -65,7 +65,7 @@ class ChatService:
 
         history_aware_retriever = create_history_aware_retriever(
             llm=self._gemini,
-            retriever=self._retriever.bind(filter={"source": self.filenames}),
+            retriever=self._retriever.bind(filter={"source": {"$in": self.filenames}}),
             prompt=contextualize_q_prompt_system,
         )
 

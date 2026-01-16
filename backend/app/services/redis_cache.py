@@ -1,4 +1,5 @@
 import redis
+import json
 
 from fastapi import HTTPException, status
 
@@ -8,7 +9,7 @@ from langchain_classic.embeddings import CacheBackedEmbeddings
 
 from ..config.config import config
 from ..config.embeddings import embeddings
-from ..schemas.schemas_request import Response
+from ..schemas.schemas_request import MetadataFile, Response
 
 
 class RedisCaching:
@@ -21,15 +22,48 @@ class RedisCaching:
         self._redis_store = RedisStore(client=self.redis_client, ttl=86400)
         self._batch_size = 128
 
+    def get_files_cache(self, session_id: str):
+        return self.redis_client.json().get(f"session:{session_id}", ".")
+
+    def set_files_cache(self, session_id: str, file: MetadataFile):
+        files_cache = self.get_files_cache(session_id=session_id)
+
+        file_dict = {
+            "status": self.get_file_status(file_id=file.file_id),
+            "document": {
+                "file_id": file.file_id,
+                "session": file.session,
+                "filename": file.file.filename,
+                "content_type": file.file.content_type,
+                "tamanho": file.file.size,
+            },
+        }
+
+        try:
+            if not files_cache:
+                self.redis_client.json().set(f"session:{session_id}", ".", [])
+                self.redis_client.json().arrappend(
+                    f"session:{session_id}", ".", file_dict
+                )
+            else:
+                self.redis_client.json().arrappend(
+                    f"session:{session_id}", ".", file_dict
+                )
+        except Exception:
+            self.set_file_status(file_id=file.file_id, status="error")
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Erro interno do servidor",
+            )
+
     def set_file_status(self, file_id: str, status: str):
-        self.redis_client.set(f"file:{file_id}:status", status, ex=600)
+        self.redis_client.set(f"file:{file_id}:status", status, ex=86400)
 
     def get_file_status(self, file_id: str) -> str:
         status_bytes = self.redis_client.get(f"file:{file_id}:status")
 
         if status_bytes:
-            return status_bytes.decode("utf-8")
-        return "unknown"
+            return status_bytes
 
     def get_chat_history(self, session_id: str):
         return RedisChatMessageHistory(
@@ -42,7 +76,7 @@ class RedisCaching:
         return redis.Redis(
             host=host,
             port=port,
-            decode_responses=False,
+            decode_responses=True,
             username="default",
             password=password,
         )

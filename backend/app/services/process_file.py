@@ -12,6 +12,7 @@ from ..services.redis_cache import cache_redis
 def processar_arquivo(doc_request: MetadataFile):
     start = time.time()
     cache_redis.set_file_status(file_id=doc_request.file_id, status="processing")
+    cache_redis.set_files_cache(session_id=doc_request.session, file=doc_request)
 
     try:
         fileParser = FileParser(doc_request)

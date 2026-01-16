@@ -13,7 +13,7 @@ class FileParser:
     def __init__(self, file: MetadataFile):
         self._file = file
         self._text_splitter = RecursiveCharacterTextSplitter(
-            chunk_size=1000, chunk_overlap=100, separators=["\n\n", "\n", " ", ""]
+            chunk_size=512, chunk_overlap=50, separators=["\n\n", "\n", " ", ""]
         )
         self._ocr = RapidOCR()
 

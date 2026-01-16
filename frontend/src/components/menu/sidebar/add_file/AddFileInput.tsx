@@ -3,14 +3,12 @@ import { validarFile } from "@/utils/validarFile";
 import { enviarArquivos } from "@/services/FileService";
 import type { AlertaType } from "@/types/AlertaType";
 import { useFilePreview } from "@/contexts/FilePreviewContext";
-import { useFiles } from "@/contexts/FilesContext";
 
 interface AddFileInputProps {
   setAlertas: React.Dispatch<React.SetStateAction<AlertaType[]>>;
 }
 
 const AddFileInput = ({ setAlertas }: AddFileInputProps) => {
-  const { setFiles } = useFiles();
   const { setFilesPreview } = useFilePreview();
 
   const onFileChange: React.ChangeEventHandler<HTMLInputElement> = async (
@@ -25,7 +23,6 @@ const AddFileInput = ({ setAlertas }: AddFileInputProps) => {
 
     for (const arquivo of arquivos_filtrados.arquivosFiltrados) {
       const res = await enviarArquivos(arquivo);
-      setFiles((prev) => [...prev, arquivo]);
       setFilesPreview((prev) => [...prev, res]);
     }
     setAlertas(arquivos_filtrados.alertas);

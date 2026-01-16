@@ -1,8 +1,10 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import Logo from "@/components/logo/Logo";
 import MenuWrapper from "@/components/menu/MenuWrapper";
+import { useChat } from "@/contexts/ChatContext";
 
 const Header = () => {
+  const { chat } = useChat();
   const [animated, setAnimated] = useState(false);
 
   const animate = () => {
@@ -17,15 +19,18 @@ const Header = () => {
   };
 
   return (
-    <>
-      <header className="relative flex items-center justify-between overflow-x-clip p-4">
-        <div onClick={animate}>
+    <header className="absolute w-full">
+      <div className="relative flex items-center justify-between overflow-x-clip p-4">
+        <div
+          onClick={animate}
+          className={`opacity-0 transition-opacity duration-2000 ${chat.length > 0 && "opacity-100 pointer-events-auto cursor-pointer"}`}
+        >
           <Logo size={3} animated={animated} />
         </div>
 
         <MenuWrapper />
-      </header>
-    </>
+      </div>
+    </header>
   );
 };
 

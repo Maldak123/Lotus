@@ -34,8 +34,8 @@ class PineconeConnection:
             sparse_encoder=self._bm25_encoder,
             namespace=namespace,
             index=self._index,
-            top_k=5,
-            alpha=0.5,
+            top_k=50,
+            alpha=0.7,
         )
 
     def armazenar_embeddings(self, doc_chunks: list[Document]) -> None:

@@ -1,4 +1,3 @@
-import React from "react";
 import type { AlertaType } from "@/types/AlertaType";
 
 interface AlertaProps {

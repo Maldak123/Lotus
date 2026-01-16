@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Folder } from "lucide-react";
 import AddFileInput from "./add_file/AddFileInput";
 import Alerta from "@/components/alerta/Alerta";

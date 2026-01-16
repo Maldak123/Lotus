@@ -18,6 +18,8 @@ const File = ({ file, removeFile }: FileProps) => {
   const addFile: React.ChangeEventHandler<HTMLInputElement> = (event) => {
     if (event.target.checked) {
       setFiles((prev) => [...prev, file.document.filename]);
+    } else {
+      setFiles((prev) => prev.filter((arq) => arq !== file.document.filename));
     }
   };
 
