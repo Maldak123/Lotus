@@ -11,6 +11,7 @@ export const enviarChat = async (mensagem: Mensagem) => {
     body: JSON.stringify({
       session_id: sessionStorage.getItem("sessionId"),
       mensagem: mensagem.mensagem,
+      filenames: mensagem.filenames
     }),
   });
 

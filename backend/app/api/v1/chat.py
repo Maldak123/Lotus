@@ -10,7 +10,7 @@ router = APIRouter()
 
 @router.post("/sendmessage")
 async def message(request: MensagemTemplate):
-    chat = ChatService(session_id=request.session_id)
+    chat = ChatService(session_id=request.session_id, filenames=request.filenames)
     answer = chat.generate_response(request.mensagem)
 
     return answer

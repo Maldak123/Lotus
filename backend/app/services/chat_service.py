@@ -22,8 +22,9 @@ from ..config.prompts import prompts
 
 
 class ChatService:
-    def __init__(self, session_id: str):
+    def __init__(self, session_id: str, filenames: list[str]):
         self._session_id = session_id
+        self.filenames = filenames
         self._retriever = pinecone.get_vectorstore(
             embedder=cache_redis.get_cached_embedder(namespace=session_id),
             namespace=session_id,
@@ -47,6 +48,7 @@ class ChatService:
 
         try:
             answer = rag_chain.invoke({"input": message, "chat_history": history})
+            print(answer['context'])
         except Exception as e:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -63,7 +65,7 @@ class ChatService:
 
         history_aware_retriever = create_history_aware_retriever(
             llm=self._gemini,
-            retriever=self._retriever,
+            retriever=self._retriever.bind(filter={"source": self.filenames}),
             prompt=contextualize_q_prompt_system,
         )
 

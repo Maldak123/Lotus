@@ -1,8 +1,8 @@
 import React, { createContext, useContext, useState } from "react";
 
 interface FilesContextProps {
-  files: File[];
-  setFiles: React.Dispatch<React.SetStateAction<File[]>>;
+  files: string[];
+  setFiles: React.Dispatch<React.SetStateAction<string[]>>;
 }
 
 export const FilesContext = createContext<FilesContextProps>({
@@ -15,7 +15,7 @@ export default function FilesProvider({
 }: {
   children: React.ReactElement;
 }) {
-  const [files, setFiles] = useState<File[]>([]);
+  const [files, setFiles] = useState<string[]>([]);
 
   return (
     <FilesContext.Provider value={{ files, setFiles }}>

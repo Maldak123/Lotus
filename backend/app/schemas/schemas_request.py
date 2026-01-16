@@ -14,6 +14,7 @@ class DocumentResponse(BaseModel):
 
 class Response(BaseModel):
     status: Optional[str] = None
+    mensagem: Optional[str] = None
     document: Optional[DocumentResponse] = None
 
 

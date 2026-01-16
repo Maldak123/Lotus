@@ -1,9 +1,11 @@
-import React, { useEffect } from "react";
-import { X } from "lucide-react";
-import FileIcon from "./FileIcon";
+import React from "react";
 import type { FileData } from "@/types/FileData";
-import { getStatusFile } from "@/services/FileService";
-import { useFilePreview } from "@/contexts/FilePreviewContext";
+import { RingLoader } from "react-spinners";
+import { useFiles } from "@/contexts/FilesContext";
+import FileIcon from "./FileIcon";
+import Error from "./fileStatus/Error";
+import Checkbox from "./fileStatus/Checkbox";
+import RemoveFile from "./RemoveFile";
 
 interface FileProps {
   file: FileData;
@@ -11,21 +13,13 @@ interface FileProps {
 }
 
 const File = ({ file, removeFile }: FileProps) => {
-  // const [status,] = useState(file.status || "processing")
-  const { updateStatusFile } = useFilePreview()
-  console.log(file.status)
+  const { setFiles } = useFiles();
 
-  useEffect(() => {
-    let interval: number | undefined
-    if (file.status !== "completed") {
-      interval = setInterval(async () => {
-        const currentStatus = await getStatusFile(file.document.file_id);
-        updateStatusFile(currentStatus)
-      }, 2000);
+  const addFile: React.ChangeEventHandler<HTMLInputElement> = (event) => {
+    if (event.target.checked) {
+      setFiles((prev) => [...prev, file.document.filename]);
     }
-
-    return () => clearInterval(interval);
-  }, [file.document.file_id, file.status, updateStatusFile]);
+  };
 
   return (
     <>
@@ -46,20 +40,23 @@ const File = ({ file, removeFile }: FileProps) => {
       </div>
 
       {file.status === "error" && (
-        <p>erro</p>
+        <div className="flex h-full flex-col items-end justify-between">
+          <RemoveFile removeFile={removeFile} file={file} />
+
+          <Error />
+        </div>
       )}
 
       {file.status === "processing" && (
-        <p>carregando</p>
+        <RingLoader color="rgba(255,255,255,0.75)" size={32} />
       )}
 
       {file.status === "completed" && (
-        <button
-          onClick={() => removeFile(file.document.file_id, file.document.session)}
-          className="text-gray-500 transition-colors hover:text-white"
-        >
-          <X size={18} />
-        </button>
+        <div className="flex h-full flex-col items-end justify-between">
+          <RemoveFile removeFile={removeFile} file={file} />
+
+          <Checkbox addFile={addFile} />
+        </div>
       )}
     </>
   );

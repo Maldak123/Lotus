@@ -14,34 +14,56 @@ export const enviarArquivos = async (arquivo: File) => {
   formData.append("session", session_id);
   formData.append("file", arquivo);
 
-  const response = await fetch(`${API_URL}/files/sendfiles`, {
-    method: "POST",
-    body: formData,
-  });
-
-  return await response.json();
+  try {
+    const response = await fetch(`${API_URL}/files/sendfiles`, {
+      method: "POST",
+      signal: AbortSignal.timeout(15000),
+      body: formData,
+    });
+    return await response.json();
+  } catch {
+    return {
+      status: "error",
+      document: {
+        file_id: idUnico,
+        session: session_id,
+        filename: arquivo.name,
+        content_type: arquivo.type,
+        tamanho: arquivo.size,
+      },
+    };
+  }
 };
 
 export const apagarArquivo = async (file_id: string, session_id: string) => {
-  const response = await fetch(`${API_URL}/files/removefile`, {
-    method: "DELETE",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ file_id: file_id, session_id: session_id }),
-  });
+  try{
+    const response = await fetch(`${API_URL}/files/removefile`, {
+      method: "DELETE",
+      signal: AbortSignal.timeout(15000),
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ file_id: file_id, session_id: session_id }),
+    });
+    return await response.json();
+  } catch{
+    return
+  }
 
-  return await response.json();
 };
 
 export const getStatusFile = async (file_id: string) => {
-  const response = await fetch(`${API_URL}/files/getfile/${file_id}`, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-      "ngrok-skip-browser-warning": "8000"
-    },
-  });
+  try {
+    const response = await fetch(`${API_URL}/files/getfile/${file_id}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "ngrok-skip-browser-warning": "8000",
+      },
+    });
 
-  return await response.json();
+    return await response.json();
+  } catch {
+    return { file_id: file_id, status: "error" };
+  }
 };

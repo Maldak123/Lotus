@@ -78,7 +78,16 @@ async def remove_file(request: RemoveFileRequest):
     return Response(mensagem="Arquivo removido.").model_dump()
 
 
+@router.delete("/deletesession")
+async def remove_session(session_id: str):
+    print(session_id)
+
+    pinecone.delete_session(session_id=session_id)
+    cache_redis.delete_session_cache(session_id=session_id)
+
+
 @router.get("/getfile/{file_id}")
 async def get_file_status(file_id: str):
     status = cache_redis.get_file_status(file_id=file_id)
+
     return {"file_id": file_id, "status": status}
