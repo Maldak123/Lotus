@@ -14,7 +14,7 @@ from fastapi import (
 
 from ...services.pinecone_db import pinecone
 from ...services.process_file import processar_arquivo
-from ...services.redis_cache import cache_redis
+from ...services.redis import redis
 
 from ...schemas.schemas_request import (
     MetadataFile,
@@ -80,20 +80,17 @@ async def remove_file(request: RemoveFileRequest):
 
 @router.delete("/deletesession")
 async def remove_session(session_id: str):
-    print(session_id)
-
     pinecone.delete_session(session_id=session_id)
-    cache_redis.delete_session_cache(session_id=session_id)
+    redis.delete_session_cache(session_id=session_id)
 
 
 @router.get("/getfile/{file_id}")
 async def get_file_status(file_id: str):
-    status = cache_redis.get_file_status(file_id=file_id)
+    status = redis.get_file_status(file_id=file_id)
 
     return {"file_id": file_id, "status": status}
 
 
 @router.get("/getsessionfiles/{session_id}")
 async def get_session_files(session_id: str):
-    print(cache_redis.get_files_cache(session_id=session_id))
-    return cache_redis.get_files_cache(session_id=session_id)
+    return redis.get_files_cache(session_id=session_id)

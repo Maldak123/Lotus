@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import InputText from "./InputText";
 import SubmitButton from "./SubmitButton";
 import { enviarChat } from "@/services/ChatService";
@@ -24,8 +24,6 @@ const InputField = () => {
       setChat((prev) => [...prev, mensagemUsuario]);
 
       const chatData = await enviarChat(mensagemUsuario);
-      console.log(chatData);
-      
       setChat((prev) => [...prev, chatData]);
     }
   };

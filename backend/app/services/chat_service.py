@@ -1,3 +1,5 @@
+import logging
+
 from fastapi import HTTPException, status
 
 from langchain_core.messages import HumanMessage, AIMessage, trim_messages
@@ -15,10 +17,12 @@ from ..schemas.schemas_request import Response
 from ..schemas.schema_chat import MensagemTemplate
 
 from .pinecone_db import pinecone
-from .redis_cache import cache_redis
+from .redis import redis
 
 from ..config.config import config
 from ..config.prompts import prompts
+
+logger = logging.getLogger(__name__)
 
 
 class ChatService:
@@ -26,38 +30,13 @@ class ChatService:
         self._session_id = session_id
         self.filenames = filenames
         self._retriever = pinecone.get_vectorstore(
-            embedder=cache_redis.get_cached_embedder(namespace=session_id),
+            embedder=redis.get_cached_embedder(namespace=session_id),
             namespace=session_id,
         )
         self._gemini = ChatGoogleGenerativeAI(
             model="gemini-2.5-flash", api_key=config.GOOGLE_API_KEY
         )
-        self._chat_history = cache_redis.get_chat_history(session_id=session_id)
-
-    def generate_response(self, message: str):
-        history = trim_messages(
-            self._chat_history.messages,
-            max_tokens=2000,
-            strategy="last",
-            token_counter=self._gemini,
-            include_system=False,
-            start_on="human",
-        )
-
-        rag_chain = self._create_chain()
-
-        try:
-            answer = rag_chain.invoke({"input": message, "chat_history": history})
-            print([doc.metadata['source'] for doc in answer['context']])
-        except Exception as e:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=Response(mensagem=f"Erro interno do servidor. {e}"),
-            )
-
-        self._save_chat_history(user_msg=message, ai_msg=answer["answer"])
-
-        return MensagemTemplate(session_id=self._session_id, type="ai", content=answer["answer"])
+        self._chat_history = redis.get_chat_history(session_id=session_id)
 
     def _create_chain(self):
         contextualize_q_prompt_system = prompts.get_contextualized_q_prompt()
@@ -80,3 +59,30 @@ class ChatService:
 
         self._chat_history.add_user_message(message=user_message)
         self._chat_history.add_ai_message(message=ai_message)
+
+    async def generate_response(self, message: str):
+        history = trim_messages(
+            self._chat_history.messages,
+            max_tokens=2000,
+            strategy="last",
+            token_counter=self._gemini,
+            include_system=False,
+            start_on="human",
+        )
+
+        rag_chain = self._create_chain()
+
+        try:
+            answer = await rag_chain.invoke({"input": message, "chat_history": history})
+        except Exception as e:
+            logger.exception("Erro na chain")
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=Response(mensagem=f"Erro interno do servidor. {e}"),
+            )
+
+        self._save_chat_history(user_msg=message, ai_msg=answer["answer"])
+
+        return MensagemTemplate(
+            session_id=self._session_id, type="ai", content=answer["answer"]
+        )

@@ -1,10 +1,8 @@
-import type { Mensagem, MessageResponse } from "@/types/Mensagem";
+import type { MessageResponse } from "@/types/Mensagem";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
 export const enviarChat = async (mensagem: MessageResponse) => {
-  console.log(mensagem);
-
   const response = await fetch(`${API_URL}/chat/sendmessage`, {
     method: "POST",
     headers: {
@@ -22,7 +20,6 @@ export const enviarChat = async (mensagem: MessageResponse) => {
 };
 
 export const getSessionMessages = async (session_id: string) => {
-  console.log(session_id);
   const response = await fetch(`${API_URL}/chat/getsession/${session_id}`, {
     method: "GET",
     headers: {

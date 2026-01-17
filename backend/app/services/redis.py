@@ -1,5 +1,4 @@
-import redis
-import json
+import redis as r
 
 from fastapi import HTTPException, status
 
@@ -9,10 +8,11 @@ from langchain_classic.embeddings import CacheBackedEmbeddings
 
 from ..config.config import config
 from ..config.embeddings import embeddings
+
 from ..schemas.schemas_request import MetadataFile, Response
 
 
-class RedisCaching:
+class Redis:
     def __init__(self):
         self.redis_client = self.get_redis_client(
             host=config.REDIS_HOST_NAME,
@@ -21,6 +21,15 @@ class RedisCaching:
         )
         self._redis_store = RedisStore(client=self.redis_client, ttl=86400)
         self._batch_size = 128
+
+    def get_redis_client(self, *, host: str, port: int, password: str):
+        return r.Redis(
+            host=host,
+            port=port,
+            decode_responses=True,
+            username="default",
+            password=password,
+        )
 
     def get_files_cache(self, session_id: str):
         return self.redis_client.json().get(f"session:{session_id}", ".")
@@ -72,15 +81,6 @@ class RedisCaching:
             ttl=86400,
         )
 
-    def get_redis_client(self, *, host: str, port: int, password: str):
-        return redis.Redis(
-            host=host,
-            port=port,
-            decode_responses=True,
-            username="default",
-            password=password,
-        )
-
     def get_cached_embedder(self, *, namespace: str):
         documents_cache = self._redis_store
         embedding = embeddings.voyage_embeddings
@@ -92,10 +92,6 @@ class RedisCaching:
             key_encoder="sha256",
             namespace=namespace,
         )
-
-    def delete_session_cache(self, session_id: str):
-        pattern = f"*{session_id}:*"
-        return self._delete_by_pattern(pattern, "Sessão não encontrada no cache.")
 
     def _delete_by_pattern(self, pattern: str, error_msg: str):
         keys_to_delete = [key for key in self.redis_client.scan_iter(match=pattern)]
@@ -109,5 +105,9 @@ class RedisCaching:
                 detail=Response(mensagem=error_msg).model_dump(),
             )
 
+    def delete_session_cache(self, session_id: str):
+        pattern = f"*{session_id}:*"
+        return self._delete_by_pattern(pattern, "Sessão não encontrada no cache.")
 
-cache_redis = RedisCaching()
+
+redis = Redis()

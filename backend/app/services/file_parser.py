@@ -1,3 +1,4 @@
+import logging
 import fitz  # PyMuPDF
 from rapidocr_onnxruntime import RapidOCR
 
@@ -6,7 +7,8 @@ from langchain_unstructured import UnstructuredLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 from ..schemas.schemas_request import MetadataFile
-from ..services.redis_cache import cache_redis
+
+logger = logging.getLogger(__name__)
 
 
 class FileParser:
@@ -16,37 +18,6 @@ class FileParser:
             chunk_size=512, chunk_overlap=50, separators=["\n\n", "\n", " ", ""]
         )
         self._ocr = RapidOCR()
-
-    def processar_arquivo(self) -> list[Document]:
-        filename = self._file.file.filename.lower()
-
-        if filename.endswith(".pdf"):
-            return self._process_pdf_custom()
-        else:
-            return self._process_unstructured()
-
-    def _process_pdf_custom(self) -> list[Document]:
-        docs = []
-
-        with fitz.open(stream=self._file.file_content, filetype="pdf") as pdf:
-            for i, page in enumerate(pdf):
-                page_text = page.get_text()
-
-                if self._tem_texto_corrompido(page_text):
-                    pix = page.get_pixmap(dpi=150)
-                    page_text = self._extrair_texto_ocr(pix)
-
-                if page_text.strip():
-                    metadados = {
-                        "source": self._file.file.filename,
-                        "file_id": self._file.file_id,
-                        "session_id": self._file.session,
-                        "page_number": i + 1,
-                    }
-
-                    docs.append(Document(page_content=page_text, metadata=metadados))
-
-        return self._text_splitter.split_documents(docs)
 
     def _process_unstructured(self) -> list[Document]:
         try:
@@ -73,7 +44,7 @@ class FileParser:
             return self._text_splitter.split_documents(docs)
 
         except Exception as e:
-            print(f"Erro no Unstructured: {e}")
+            logger.error("Erro no carregamento do Unstructured: %s", e)
             return []
 
     def _tem_texto_corrompido(self, text: str) -> bool:
@@ -91,3 +62,34 @@ class FileParser:
         if ocr_result:
             return "\n".join([item[1] for item in ocr_result])
         return ""
+
+    def _process_pdf_custom(self) -> list[Document]:
+        docs = []
+
+        with fitz.open(stream=self._file.file_content, filetype="pdf") as pdf:
+            for i, page in enumerate(pdf):
+                page_text = page.get_text()
+
+                if self._tem_texto_corrompido(page_text):
+                    pix = page.get_pixmap(dpi=150)
+                    page_text = self._extrair_texto_ocr(pix)
+
+                if page_text.strip():
+                    metadados = {
+                        "source": self._file.file.filename,
+                        "file_id": self._file.file_id,
+                        "session_id": self._file.session,
+                        "page_number": i + 1,
+                    }
+
+                    docs.append(Document(page_content=page_text, metadata=metadados))
+
+        return self._text_splitter.split_documents(docs)
+
+    def processar_arquivo(self) -> list[Document]:
+        filename = self._file.file.filename.lower()
+
+        if filename.endswith(".pdf"):
+            return self._process_pdf_custom()
+        else:
+            return self._process_unstructured()

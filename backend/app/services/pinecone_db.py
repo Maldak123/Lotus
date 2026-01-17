@@ -1,4 +1,5 @@
 import concurrent.futures
+import logging
 
 from fastapi import HTTPException, status
 
@@ -9,10 +10,12 @@ from langchain_core.documents import Document
 from langchain_classic.embeddings import CacheBackedEmbeddings
 from langchain_community.retrievers import PineconeHybridSearchRetriever
 
-from .redis_cache import cache_redis
+from .redis import redis
 
 from ..config.config import config
 from ..schemas.schemas_request import Response
+
+logger = logging.getLogger(__name__)
 
 
 class PineconeConnection:
@@ -38,6 +41,38 @@ class PineconeConnection:
             alpha=0.7,
         )
 
+    def _verify_and_create_index(self) -> None:
+        if not self._pc.has_index(self._index_name):
+            self._pc.create_index(
+                name=self._index_name,
+                dimension=1024,
+                metric="dotproduct",
+                spec=ServerlessSpec(cloud="aws", region="us-east-1"),
+            )
+            logger.info(f"Índice {self._index_name} criado.")
+        else:
+            logger.info(f"Conectando-se a {self._index_name}")
+
+    def _armazenar_vectorstore(self, batch: list[Document]) -> None:
+        session_id = batch[0].metadata.get("session_id")
+
+        textos = [doc.page_content for doc in batch]
+        metadata = [doc.metadata for doc in batch]
+
+        embedder = redis.get_cached_embedder(namespace=session_id)
+        vectorstore = self.get_vectorstore(embedder=embedder, namespace=session_id)
+
+        try:
+            vectorstore.add_texts(
+                texts=textos, metadatas=metadata, namespace=session_id
+            )
+        except Exception as e:
+            logger.exception("Erro ao armazenar arquivo no vectorstore: %s", e)
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=Response(mensagem="Erro ao armazenar arquivo.").model_dump(),
+            )
+
     def armazenar_embeddings(self, doc_chunks: list[Document]) -> None:
         batches = [
             doc_chunks[i : i + self._batch_size]
@@ -52,9 +87,10 @@ class PineconeConnection:
             self._index.delete(namespace=session_id, filter={"file_id": file_id})
             return Response(mensagem=f"Documento {file_id} removido")
         except Exception as e:
+            logger.exception("Erro ao deletar o documento: %s", e)
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=Response(mensagem=f"Erro ao deletar file: {e}").model_dump(),
+                detail=Response(mensagem="Erro ao deletar file").model_dump(),
             )
 
     def delete_session(self, session_id: str) -> Response:
@@ -69,40 +105,10 @@ class PineconeConnection:
 
             return Response(mensagem=f"Sessão {session_id} removida.")
         except Exception as e:
+            logger.exception("Erro ao deletar a sessão: %s", e)
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=Response(mensagem=f"Erro ao deletar sessão: {e}").model_dump(),
-            )
-
-    def _verify_and_create_index(self) -> None:
-        if not self._pc.has_index(self._index_name):
-            self._pc.create_index(
-                name=self._index_name,
-                dimension=1024,
-                metric="dotproduct",
-                spec=ServerlessSpec(cloud="aws", region="us-east-1"),
-            )
-            print(f"Índice {self._index_name} criado.")
-        else:
-            print(f"Conectando-se a {self._index_name}")
-
-    def _armazenar_vectorstore(self, batch: list[Document]) -> None:
-        session_id = batch[0].metadata.get("session_id")
-
-        textos = [doc.page_content for doc in batch]
-        metadata = [doc.metadata for doc in batch]
-
-        embedder = cache_redis.get_cached_embedder(namespace=session_id)
-        vectorstore = self.get_vectorstore(embedder=embedder, namespace=session_id)
-
-        try:
-            vectorstore.add_texts(
-                texts=textos, metadatas=metadata, namespace=session_id
-            )
-        except Exception as e:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=Response(mensagem=f"Erro ao armazenar file: {e}").model_dump(),
+                detail=Response(mensagem="Erro ao deletar sessão.").model_dump(),
             )
 
 
