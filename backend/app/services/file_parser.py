@@ -1,4 +1,3 @@
-import logging
 import fitz  # PyMuPDF
 from rapidocr_onnxruntime import RapidOCR
 
@@ -6,9 +5,7 @@ from langchain_core.documents import Document
 from langchain_unstructured import UnstructuredLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
-from ..schemas.schemas_request import MetadataFile
-
-logger = logging.getLogger(__name__)
+from ..domain.file_dto import MetadataFile
 
 
 class FileParser:
@@ -20,32 +17,27 @@ class FileParser:
         self._ocr = RapidOCR()
 
     def _process_unstructured(self) -> list[Document]:
-        try:
-            loader = UnstructuredLoader(
-                file=self._file.file_content,
-                metadata_filename=self._file.file.filename,
-                strategy="fast",
-            )
-            data = loader.load()
+        loader = UnstructuredLoader(
+            file=self._file.file_content,
+            metadata_filename=self._file.filename,
+            strategy="fast",
+        )
+        data = loader.load()
 
-            docs = []
-            for doc in data:
-                metadados = {
-                    "source": self._file.file.filename,
-                    "file_id": self._file.file_id,
-                    "session_id": self._file.session,
-                    "page_number": doc.metadata.get("page_number"),
-                    "sheet_name": doc.metadata.get("sheet_name"),
-                }
+        docs = []
+        for doc in data:
+            metadados = {
+                "source": self._file.filename,
+                "file_id": self._file.file_id,
+                "session_id": self._file.session,
+                "page_number": doc.metadata.get("page_number"),
+                "sheet_name": doc.metadata.get("sheet_name"),
+            }
 
-                metadados = {k: v for k, v in metadados.items() if v is not None}
-                docs.append(Document(page_content=doc.page_content, metadata=metadados))
+            metadados = {k: v for k, v in metadados.items() if v is not None}
+            docs.append(Document(page_content=doc.page_content, metadata=metadados))
 
-            return self._text_splitter.split_documents(docs)
-
-        except Exception as e:
-            logger.error("Erro no carregamento do Unstructured: %s", e)
-            return []
+        return self._text_splitter.split_documents(docs)
 
     def _tem_texto_corrompido(self, text: str) -> bool:
         if not text:
@@ -76,7 +68,7 @@ class FileParser:
 
                 if page_text.strip():
                     metadados = {
-                        "source": self._file.file.filename,
+                        "source": self._file.filename,
                         "file_id": self._file.file_id,
                         "session_id": self._file.session,
                         "page_number": i + 1,
@@ -87,7 +79,7 @@ class FileParser:
         return self._text_splitter.split_documents(docs)
 
     def processar_arquivo(self) -> list[Document]:
-        filename = self._file.file.filename.lower()
+        filename = self._file.filename.lower()
 
         if filename.endswith(".pdf"):
             return self._process_pdf_custom()

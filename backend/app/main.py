@@ -1,12 +1,13 @@
-import logging
-
-from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi import FastAPI
+
 from .api.v1.files import router as files
 from .api.v1.chat import router as chat
+from .core.logging import setup_logging
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-app = FastAPI()
+setup_logging()
+
+app = FastAPI(title="Lotus")
 
 origins = [
     "http://localhost",
@@ -30,4 +31,3 @@ app.include_router(chat, prefix="/chat")
 @app.get("/")
 async def root():
     return {"mensagem": "Online"}
-

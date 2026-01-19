@@ -1,5 +1,5 @@
-import concurrent.futures
 import logging
+import concurrent.futures
 
 from fastapi import HTTPException, status
 
@@ -10,13 +10,14 @@ from langchain_core.documents import Document
 from langchain_classic.embeddings import CacheBackedEmbeddings
 from langchain_community.retrievers import PineconeHybridSearchRetriever
 
-from .redis import redis
+from .redis import Redis
 
-from ..config.config import config
+from ..core.config import config
 from ..schemas.schemas_request import Response
 
-logger = logging.getLogger(__name__)
 
+logger = logging.getLogger(__name__)
+redis=Redis()
 
 class PineconeConnection:
     def __init__(
@@ -26,15 +27,18 @@ class PineconeConnection:
         self._index_name = config.PINECONE_INDEX_NAME
         self._verify_and_create_index()
         self._index = self._pc.Index(self._index_name)
-        self._bm25_encoder = BM25Encoder().default()
-        self._batch_size = 128
+
+    def get_pinecone_client(self):
+        return self._pc
 
     def get_vectorstore(
         self, *, embedder: CacheBackedEmbeddings, namespace: str
     ) -> PineconeHybridSearchRetriever:
+        bm25_encoder = BM25Encoder().default()
+
         return PineconeHybridSearchRetriever(
             embeddings=embedder,
-            sparse_encoder=self._bm25_encoder,
+            sparse_encoder=bm25_encoder,
             namespace=namespace,
             index=self._index,
             top_k=50,
@@ -49,9 +53,9 @@ class PineconeConnection:
                 metric="dotproduct",
                 spec=ServerlessSpec(cloud="aws", region="us-east-1"),
             )
-            logger.info(f"Índice {self._index_name} criado.")
+            logger.info("Índice %s criado", self._index_name)
         else:
-            logger.info(f"Conectando-se a {self._index_name}")
+            logger.info("Conectando-se a %s", self._index_name)
 
     def _armazenar_vectorstore(self, batch: list[Document]) -> None:
         session_id = batch[0].metadata.get("session_id")
@@ -74,13 +78,19 @@ class PineconeConnection:
             )
 
     def armazenar_embeddings(self, doc_chunks: list[Document]) -> None:
+        batch_size = 128
+
         batches = [
-            doc_chunks[i : i + self._batch_size]
-            for i in range(0, len(doc_chunks), self._batch_size)
+            doc_chunks[i : i + batch_size]
+            for i in range(0, len(doc_chunks), batch_size)
         ]
 
         with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
-            list(executor.map(self._armazenar_vectorstore, batches))
+            futures = [
+                executor.submit(self._armazenar_vectorstore, batch) for batch in batches
+            ]
+            for fut in concurrent.futures.as_completed(futures):
+                fut.result()
 
     def delete_document(self, session_id: str, file_id: str):
         try:
@@ -111,5 +121,3 @@ class PineconeConnection:
                 detail=Response(mensagem="Erro ao deletar sessão.").model_dump(),
             )
 
-
-pinecone = PineconeConnection()

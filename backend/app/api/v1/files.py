@@ -1,79 +1,62 @@
 import io
 
-from uuid import UUID
-
 from fastapi import (
-    BackgroundTasks,
-    UploadFile,
-    File,
-    Form,
+    Depends,
     APIRouter,
-    HTTPException,
-    status,
 )
 
-from ...services.pinecone_db import pinecone
+from ...services.pinecone_db import PineconeConnection
 from ...services.process_file import processar_arquivo
-from ...services.redis import redis
+from ...core.redis_client import get_redis
+
+from ...domain.file_dto import MetadataFile
 
 from ...schemas.schemas_request import (
-    MetadataFile,
+    FileRequest,
+    DocumentResponse,
     RemoveFileRequest,
     Response,
 )
 
-from ...utils.create_req_return import create_request_return
-from ...utils.validations import validations
-
-
 router = APIRouter()
+redis = get_redis()
+pinecone = PineconeConnection()
 
 
 @router.post("/sendfiles")
-async def receive_files(
-    background_tasks: BackgroundTasks,
-    file_id: UUID = Form(...),
-    session: str = Form(...),
-    file: UploadFile = File(...),
-):
-    error_msg = None
-    if validations.validate_file_size(file.size):
-        error_msg = "Os documentos devem ter no máximo 5MB."
-    elif not validations.validate_mimetype(file.content_type):
-        error_msg = "Arquivo inválido."
-    elif not validations.validate_session(session):
-        error_msg = "ID de sessão inválido."
-
-    if error_msg:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=Response(
-                mensagem=error_msg,
-                documento=create_request_return(
-                    MetadataFile(file_id=str(file_id), session=session, file=file)
-                ),
-            ).model_dump(),
-        )
-
-    doc_bytes = await file.read()
+async def receive_files(file: FileRequest = Depends()):
+    doc_bytes = await file.file.read()
     f = io.BytesIO(doc_bytes)
     f.seek(0)
 
     doc_request = MetadataFile(
-        file_id=str(file_id), session=session, file=file, file_content=f
+        file_id=str(file.file_id),
+        session=file.session,
+        filename=file.file.filename,
+        size=file.file.size,
+        content_type=file.file.content_type,
+        file_content=f,
     )
 
-    background_tasks.add_task(processar_arquivo, doc_request)
+    redis.set_task(processar_arquivo, doc_request)
+    # background_tasks.add_task(processar_arquivo, doc_request)
 
     return Response(
         status="processing",
-        document=create_request_return(doc_request),
+        document=DocumentResponse(
+            file_id=doc_request.file_id,
+            session=doc_request.session,
+            filename=doc_request.filename,
+            content_type=doc_request.content_type,
+            tamanho=doc_request.size,
+        ),
     ).model_dump()
 
 
 @router.delete("/removefile")
 async def remove_file(request: RemoveFileRequest):
     pinecone.delete_document(request.session_id, request.file_id)
+    redis.delete_file_from_cache(request.session_id, request.file_id)
 
     return Response(mensagem="Arquivo removido.").model_dump()
 

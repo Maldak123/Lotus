@@ -17,7 +17,7 @@ export const enviarArquivos = async (arquivo: File) => {
   try {
     const response = await fetch(`${API_URL}/files/sendfiles`, {
       method: "POST",
-      signal: AbortSignal.timeout(15000),
+      signal: AbortSignal.timeout(120000),
       body: formData,
     });
     return await response.json();

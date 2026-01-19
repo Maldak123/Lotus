@@ -10,12 +10,15 @@ interface FileWrapperProps {
 }
 
 const FileWrapper = ({ file }: FileWrapperProps) => {
-  const { setFilesPreview } = useFilePreview();
+  const { filesPreview, setFilesPreview } = useFilePreview();
   const { updateStatusFile } = useFilePreview();
+
+  console.log(filesPreview);
+  
 
   useEffect(() => {
     let interval: number | undefined;
-    if (file.status === "processing") {
+    if (file.status === "processing" || !file.status) {
       interval = setInterval(async () => {
         const currentStatus = await getStatusFile(file.document.file_id);
         updateStatusFile(currentStatus);

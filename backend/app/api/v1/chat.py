@@ -2,17 +2,18 @@ from fastapi import APIRouter, HTTPException, status
 
 from ...schemas.schema_chat import MensagemTemplate
 
-from ...services.redis import redis
+from ...core.redis_client import get_redis
 from ...services.chat_service import ChatService
 
 
 router = APIRouter()
+redis = get_redis()
 
 
 @router.post("/sendmessage")
-async def message(request: MensagemTemplate):
+def message(request: MensagemTemplate):
     chat = ChatService(session_id=request.session_id, filenames=request.filenames)
-    answer = await chat.generate_response(request.content)
+    answer = chat.generate_response(request.content)
 
     return answer
 

@@ -1,6 +1,6 @@
 from langchain_voyageai.embeddings import VoyageAIEmbeddings
 
-from ..config.config import config
+from ..core.config import config
 
 
 class Embeddings:
