@@ -3,20 +3,24 @@ import type { MessageResponse } from "@/types/Mensagem";
 const API_URL = import.meta.env.VITE_API_URL;
 
 export const enviarChat = async (mensagem: MessageResponse) => {
-  const response = await fetch(`${API_URL}/chat/sendmessage`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      session_id: sessionStorage.getItem("sessionId"),
-      type:"user",
-      content: mensagem.content,
-      filenames: mensagem.filenames,
-    }),
-  });
+  try {
+    const response = await fetch(`${API_URL}/chat/sendmessage`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
 
-  return await response.json();
+      body: JSON.stringify({
+        session_id: sessionStorage.getItem("sessionId"),
+        type: "user",
+        content: mensagem.content,
+        filenames: mensagem.filenames,
+      }),
+    });
+    return await response.json();
+  } catch {
+    return { type: "error", content: "Ocorreu um erro ao enviar a mensagem." };
+  }
 };
 
 export const getSessionMessages = async (session_id: string) => {

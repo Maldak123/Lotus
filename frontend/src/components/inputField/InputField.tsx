@@ -6,10 +6,9 @@ import { useChat } from "@/contexts/ChatContext";
 import type { MessageResponse } from "@/types/Mensagem";
 import { useFiles } from "@/contexts/FilesContext";
 
-
 const InputField = () => {
-  const { files } = useFiles()
-  const { setChat } = useChat();
+  const { files } = useFiles();
+  const { setChat, setIsThinking } = useChat();
   const [input, setInput] = useState("");
 
   const handleSubmit = async () => {
@@ -17,14 +16,19 @@ const InputField = () => {
       const mensagemUsuario: MessageResponse = {
         type: "human",
         content: input.trim(),
-        filenames: files
+        filenames: files,
       };
 
       setInput("");
-      setChat((prev) => [...prev, mensagemUsuario]);
+      setChat((prev) => [
+        ...prev.filter((e) => e.type !== "error"),
+        mensagemUsuario,
+      ]);
+      setIsThinking(true);
 
       const chatData = await enviarChat(mensagemUsuario);
       setChat((prev) => [...prev, chatData]);
+      setIsThinking(false);
     }
   };
 

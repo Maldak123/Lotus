@@ -2,9 +2,11 @@ import { useEffect, useRef } from "react";
 import ChatPlaceholder from "./ChatPlaceholder";
 import ChatMessage from "./ChatMessage";
 import { useChat } from "@/contexts/ChatContext";
+import LotusChatHeader from "./LotusChatHeader";
+import Alerta from "../alerta/Alerta";
 
 const Chat = () => {
-  const { chat } = useChat();
+  const { chat, isThinking } = useChat();
   const chatScrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -23,9 +25,20 @@ const Chat = () => {
 
       <div ref={chatScrollRef} className="h-full overflow-y-auto">
         <div className="flex min-h-full flex-col justify-end gap-2 pt-15">
-          {chat.map((e, index) => (
-            <ChatMessage key={index} sender={e.type} mensagem={e.content} />
-          ))}
+          {chat.map((e, index) =>
+            e.type === "error" ? (
+              <Alerta
+                alerta={{
+                  tipo: "erro",
+                  mensagem: "Não foi possível enviar a mensagem",
+                }}
+              />
+            ) : (
+              <ChatMessage key={index} message={e} />
+            ),
+          )}
+
+          {isThinking && <LotusChatHeader isThinking={isThinking} />}
         </div>
       </div>
     </div>
