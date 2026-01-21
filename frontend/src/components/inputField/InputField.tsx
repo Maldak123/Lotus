@@ -33,12 +33,16 @@ const InputField = () => {
   };
 
   return (
-    <>
+    <div className="flex flex-col gap-2">
       <div className="flex w-full items-end gap-2">
         <InputText setInput={setInput} input={input} enviar={handleSubmit} />
         <SubmitButton enviar={handleSubmit} />
       </div>
-    </>
+      <p className="text-center opacity-30 text-xs md:text-sm">
+        Lotus é um projeto experimental e pode apresentar respostas imprecisas.
+        Verifique as repostas.
+      </p>
+    </div>
   );
 };
 

@@ -13,6 +13,7 @@ const MenuWrapper = () => {
             onClick={() => setSidebar(!sidebar)}
             color="rgba(255,255,255,0.75)"
             size={32}
+            strokeWidth={0.75}
             className="z-999"
           />
           <span
@@ -21,11 +22,13 @@ const MenuWrapper = () => {
           ></span>
         </>
       ) : (
-        <Menu
-          size={32}
+        <div
+          className="flex items-center gap-2"
           onClick={() => setSidebar(!sidebar)}
-          className="z-999"
-        />
+        >
+          <span className="text-sm">Arquivos</span>
+          <Menu size={32} strokeWidth={0.75} className="z-999" />
+        </div>
       )}
 
       <SidebarWrapper sidebar={sidebar} />

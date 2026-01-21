@@ -13,7 +13,7 @@ const ChatPlaceholder = () => {
         </h1>
 
         <p className="text-[rgba(255,255,255,0.5)] px-6 text-center">
-          Envie seus arquivos, e deixe que a Lotus lhe responda.
+          Envie seus arquivos, e deixe que a Lotus tire suas dúvidas.
         </p>
       </div>
     </div>
