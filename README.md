@@ -1,10 +1,35 @@
-
-<img style="height=50%" src="./Banner.webp" alt="" />
+<img src="./Banner.webp" alt="" />
 
 # 🌸 Lotus — Chatbot Inteligente Baseado em RAG
 
 Lotus é uma aplicação de **chatbot inteligente** baseada em **RAG (Retrieval‑Augmented Generation)**. O sistema permite que utilizadores façam upload de documentos, processem o seu conteúdo e conversem com uma Inteligência Artificial que utiliza esses arquivos como **contexto** para responder a perguntas de forma mais precisa e confiável.
 
+---
+
+## 📂 Estrutura do Projeto
+
+```text
+Lotus/
+├── backend/
+│   ├── app/
+│   │   ├── api/          # Rotas da API (Chat, Files)
+│   │   ├── core/         # Configurações, Logging, Prompts
+│   │   ├── domain/       # Modelos de Domínio (DTOs)
+│   │   ├── schemas/      # Schemas Pydantic
+│   │   ├── services/     # Lógica de Negócio (RAG, Redis, Pinecone)
+│   │   └── utils/        # Validadores e Utilitários
+│   ├── requirements.txt
+│   └── .env
+│
+└── frontend/
+    ├── src/
+    │   ├── components/   # Componentes React (Chat, Sidebar, Inputs)
+    │   ├── contexts/     # Context API (Chat, Files)
+    │   ├── services/     # Integração com API (Fetch)
+    │   ├── types/        # Definições TypeScript
+    │   └── layout/       # Estrutura de Header / Page
+    └── package.json
+```
 ---
 
 ## ✨ Funcionalidades Principais
@@ -106,7 +131,7 @@ flowchart TB
 
   * Interface de utilizador
   * Upload de arquivos
-  * Chat em tempo real com a API
+  * Chat em tempo real com a IA
 
 ---
 
@@ -228,6 +253,12 @@ uvicorn main:app --reload
 * Backend disponível em: **[http://localhost:8000](http://localhost:8000)**
 * Documentação da API: **/docs**
 
+#### Iniciar o Worker na raíz do Backend
+
+```bash
+python3 worker.py
+```
+
 ---
 
 #### 3️⃣ Configurar e Iniciar o Frontend
@@ -252,33 +283,7 @@ npm run dev
 
 ---
 
-## 📂 Estrutura do Projeto
-
-```text
-Lotus/
-├── backend/
-│   ├── app/
-│   │   ├── api/          # Rotas da API (Chat, Files)
-│   │   ├── core/         # Configurações, Logging, Prompts
-│   │   ├── domain/       # Modelos de Domínio (DTOs)
-│   │   ├── schemas/      # Schemas Pydantic
-│   │   ├── services/     # Lógica de Negócio (RAG, Redis, Pinecone)
-│   │   └── utils/        # Validadores e Utilitários
-│   ├── requirements.txt
-│   └── .env
-│
-└── frontend/
-    ├── src/
-    │   ├── components/   # Componentes React (Chat, Sidebar, Inputs)
-    │   ├── contexts/     # Context API (Chat, Files)
-    │   ├── services/     # Integração com API (Axios / Fetch)
-    │   ├── types/        # Definições TypeScript
-    │   └── layout/       # Estrutura de Header / Page
-    └── package.json
-```
-
----
 
 ## 📄 Licença
 
-Este projeto está licenciado sob a **MIT License**.
+Este projeto foi feito apenas como forma de estudo, e está licenciado sob a **MIT License**.
