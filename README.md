@@ -1,10 +1,35 @@
-
-<img style="height=50%" src="./Banner.webp" alt="" />
+<img src="./Banner.webp" alt="" />
 
 # 🌸 Lotus — Chatbot Inteligente Baseado em RAG
 
 Lotus é uma aplicação de **chatbot inteligente** baseada em **RAG (Retrieval‑Augmented Generation)**. O sistema permite que utilizadores façam upload de documentos, processem o seu conteúdo e conversem com uma Inteligência Artificial que utiliza esses arquivos como **contexto** para responder a perguntas de forma mais precisa e confiável.
 
+---
+
+## 📂 Estrutura do Projeto
+
+```text
+Lotus/
+├── backend/
+│   ├── app/
+│   │   ├── api/          # Rotas da API (Chat, Files)
+│   │   ├── core/         # Configurações, Logging, Prompts
+│   │   ├── domain/       # Modelos de Domínio (DTOs)
+│   │   ├── schemas/      # Schemas Pydantic
+│   │   ├── services/     # Lógica de Negócio (RAG, Redis, Pinecone)
+│   │   └── utils/        # Validadores e Utilitários
+│   ├── requirements.txt
+│   └── .env
+│
+└── frontend/
+    ├── src/
+    │   ├── components/   # Componentes React (Chat, Sidebar, Inputs)
+    │   ├── contexts/     # Context API (Chat, Files)
+    │   ├── services/     # Integração com API (Fetch)
+    │   ├── types/        # Definições TypeScript
+    │   └── layout/       # Estrutura de Header / Page
+    └── package.json
+```
 ---
 
 ## ✨ Funcionalidades Principais
@@ -26,65 +51,7 @@ O fluxo de dados ocorre da seguinte forma:
 
 ### 📊 Diagrama de Arquitetura
 
-```mermaid
-flowchart TB
- subgraph Frontend["Frontend (React + Vite)"]
-        UI["Interface UI"]
-        ChatComp["Componente Chat"]
-        FileComp["Gestor de arquivos"]
-        ChatService["ChatService.ts"]
-        FileService["FileService.ts"]
-  end
-
- subgraph Controllers["Controllers"]
-        ChatCtrl["Chat Endpoint"]
-        FileCtrl["File Endpoint"]
-  end
-
- subgraph Services["Services"]
-        Guard["Guardrail Service"]
-        Process["Process File Service"]
-        EmbedService["Embeddings Service"]
-        PineconeService["Pinecone Service"]
-  end
-
- subgraph Backend["Backend (Python / FastAPI)"]
-        API["API Gateway / main.py"]
-        Controllers
-        Services
-        Worker["Worker.py / Background Task"]
-  end
-
- subgraph Infrastructure["Infraestrutura & Serviços Externos"]
-        Redis[("Redis - Queue / Cache")]
-        Pinecone[("Pinecone - Vector DB")]
-        LLM["Google Gemini API"]
-  end
-
-    User(("Usuário")) -- Envia mensagem --> UI
-    UI --> ChatComp & FileComp
-    ChatComp --> ChatService
-    ChatService -- POST /chat --> API
-    API --> ChatCtrl
-    ChatCtrl -- 1. Validação --> Guard
-    ChatCtrl -- 2. Embedding da Pergunta --> EmbedService
-    ChatCtrl -- 3. Busca de Contexto --> PineconeService
-    PineconeService <-- Query Vectors --> Pinecone
-    ChatCtrl -- 4. Prompt + Contexto --> LLM
-    LLM -- Resposta --> ChatCtrl
-    ChatCtrl -- Resposta Final --> ChatService
-
-    User -- Upload de Arquivo --> UI
-    FileComp --> FileService
-    FileService -- POST /files --> API
-    API --> FileCtrl
-    FileCtrl -- Enfileirar Tarefa --> Redis
-    Redis -- Consumir Tarefa --> Worker
-    Worker -- Ler e Processar --> Process
-    Process -- Gerar Embeddings --> EmbedService
-    EmbedService -- Upsert --> PineconeService
-    PineconeService -- Persistir --> Pinecone
-```
+<img src="./Diagram.png"/>
 
 ---
 
@@ -106,7 +73,7 @@ flowchart TB
 
   * Interface de utilizador
   * Upload de arquivos
-  * Chat em tempo real com a API
+  * Chat em tempo real com a IA
 
 ---
 
@@ -126,7 +93,6 @@ flowchart TB
   * Pinecone — base de dados vetorial
   * Redis — cache e histórico de chat
 * **Segurança:** Guardrails para validação de input seguro
-* **Containerização:** Docker
 
 ### Frontend (`/frontend`)
 
@@ -228,6 +194,12 @@ uvicorn main:app --reload
 * Backend disponível em: **[http://localhost:8000](http://localhost:8000)**
 * Documentação da API: **/docs**
 
+#### Iniciar o Worker na raíz do Backend
+
+```bash
+python3 worker.py
+```
+
 ---
 
 #### 3️⃣ Configurar e Iniciar o Frontend
@@ -252,33 +224,7 @@ npm run dev
 
 ---
 
-## 📂 Estrutura do Projeto
-
-```text
-Lotus/
-├── backend/
-│   ├── app/
-│   │   ├── api/          # Rotas da API (Chat, Files)
-│   │   ├── core/         # Configurações, Logging, Prompts
-│   │   ├── domain/       # Modelos de Domínio (DTOs)
-│   │   ├── schemas/      # Schemas Pydantic
-│   │   ├── services/     # Lógica de Negócio (RAG, Redis, Pinecone)
-│   │   └── utils/        # Validadores e Utilitários
-│   ├── requirements.txt
-│   └── .env
-│
-└── frontend/
-    ├── src/
-    │   ├── components/   # Componentes React (Chat, Sidebar, Inputs)
-    │   ├── contexts/     # Context API (Chat, Files)
-    │   ├── services/     # Integração com API (Axios / Fetch)
-    │   ├── types/        # Definições TypeScript
-    │   └── layout/       # Estrutura de Header / Page
-    └── package.json
-```
-
----
 
 ## 📄 Licença
 
-Este projeto está licenciado sob a **MIT License**.
+Este projeto foi feito apenas como forma de estudo, e está licenciado sob a **MIT License**.
