@@ -51,65 +51,7 @@ O fluxo de dados ocorre da seguinte forma:
 
 ### 📊 Diagrama de Arquitetura
 
-```mermaid
-flowchart TB
- subgraph Frontend["Frontend (React + Vite)"]
-        UI["Interface UI"]
-        ChatComp["Componente Chat"]
-        FileComp["Gestor de arquivos"]
-        ChatService["ChatService.ts"]
-        FileService["FileService.ts"]
-  end
-
- subgraph Controllers["Controllers"]
-        ChatCtrl["Chat Endpoint"]
-        FileCtrl["File Endpoint"]
-  end
-
- subgraph Services["Services"]
-        Guard["Guardrail Service"]
-        Process["Process File Service"]
-        EmbedService["Embeddings Service"]
-        PineconeService["Pinecone Service"]
-  end
-
- subgraph Backend["Backend (Python / FastAPI)"]
-        API["API Gateway / main.py"]
-        Controllers
-        Services
-        Worker["Worker.py / Background Task"]
-  end
-
- subgraph Infrastructure["Infraestrutura & Serviços Externos"]
-        Redis[("Redis - Queue / Cache")]
-        Pinecone[("Pinecone - Vector DB")]
-        LLM["Google Gemini API"]
-  end
-
-    User(("Usuário")) -- Envia mensagem --> UI
-    UI --> ChatComp & FileComp
-    ChatComp --> ChatService
-    ChatService -- POST /chat --> API
-    API --> ChatCtrl
-    ChatCtrl -- 1. Validação --> Guard
-    ChatCtrl -- 2. Embedding da Pergunta --> EmbedService
-    ChatCtrl -- 3. Busca de Contexto --> PineconeService
-    PineconeService <-- Query Vectors --> Pinecone
-    ChatCtrl -- 4. Prompt + Contexto --> LLM
-    LLM -- Resposta --> ChatCtrl
-    ChatCtrl -- Resposta Final --> ChatService
-
-    User -- Upload de Arquivo --> UI
-    FileComp --> FileService
-    FileService -- POST /files --> API
-    API --> FileCtrl
-    FileCtrl -- Enfileirar Tarefa --> Redis
-    Redis -- Consumir Tarefa --> Worker
-    Worker -- Ler e Processar --> Process
-    Process -- Gerar Embeddings --> EmbedService
-    EmbedService -- Upsert --> PineconeService
-    PineconeService -- Persistir --> Pinecone
-```
+<img src="./Diagram.svg"/>
 
 ---
 
