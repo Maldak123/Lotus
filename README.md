@@ -151,7 +151,6 @@ flowchart TB
   * Pinecone — base de dados vetorial
   * Redis — cache e histórico de chat
 * **Segurança:** Guardrails para validação de input seguro
-* **Containerização:** Docker
 
 ### Frontend (`/frontend`)
 
