@@ -10,7 +10,7 @@ const Checkbox = ({ addFile }: CheckboxProps) => {
   const [checked, setChecked] = useState<boolean>(!!check);
 
   return (
-    <div className="relative size-fit">
+    <div className="relative size-fit cursor-pointer">
       <input
         className="peer z-1 size-5 appearance-none rounded-sm border border-[rgba(255,255,255,0.5)] checked:bg-[rgba(255,255,255,0.25)]"
         type="checkbox"

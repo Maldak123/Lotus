@@ -41,18 +41,21 @@ const ApplicationWrapper = () => {
   return (
     <div className="relative h-dvh">
       <div
-        className="absolute inset-0 transition-opacity duration-1000"
+        className="absolute inset-0 flex justify-center transition-opacity duration-1000"
         style={{
           opacity: isTutorialDone ? "100%" : "0%",
-          height: isTutorialDone ? "100%" : "0%",
+          pointerEvents: isTutorialDone ? "auto" : "none",
         }}
       >
         <TutorialWrapper setTutorialDone={setTutorialDone} />
       </div>
 
       <div
-        className="h-full"
-        style={{ display: isTutorialDone ? "none" : "block" }}
+        className="h-full transition-opacity duration-1000"
+        style={{
+          pointerEvents: isTutorialDone ? "none" : "auto",
+          opacity: isTutorialDone ? "0%" : "100%",
+        }}
       >
         <Header />
         <main className="flex h-full w-full items-center justify-center">
