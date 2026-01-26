@@ -51,7 +51,7 @@ O fluxo de dados ocorre da seguinte forma:
 
 ### 📊 Diagrama de Arquitetura
 
-<img src="./Diagram.svg"/>
+<img src="./Diagram.png"/>
 
 ---
 
