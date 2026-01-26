@@ -77,7 +77,7 @@ class ChatService:
 
         history = trim_messages(
             self._chat_history.messages,
-            max_tokens=2000,
+            max_tokens=4000,
             strategy="last",
             token_counter=self._gemini,
             include_system=False,

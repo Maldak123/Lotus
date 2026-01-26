@@ -23,11 +23,11 @@ const MenuWrapper = () => {
         </>
       ) : (
         <div
-          className="flex items-center gap-2"
+          className="flex items-center gap-2 cursor-pointer"
           onClick={() => setSidebar(!sidebar)}
         >
-          <span className="text-sm">Arquivos</span>
-          <Menu size={32} strokeWidth={0.75} className="z-999" />
+          <span className="text-sm lg:text-lg">Arquivos</span>
+          <Menu size={32} strokeWidth={0.75} className="z-999 size-12" />
         </div>
       )}
 
