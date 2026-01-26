@@ -1,6 +1,10 @@
-<img src="./Banner.webp" alt="" />
+<img src="./docs/Banner.webp" alt="" />
 
 # 🌸 Lotus — Chatbot Inteligente Baseado em RAG
+
+To see the english version, click [here](./docs/README-en.md)
+
+---
 
 Lotus é uma aplicação de **chatbot inteligente** baseada em **RAG (Retrieval‑Augmented Generation)**. O sistema permite que utilizadores façam upload de documentos, processem o seu conteúdo e conversem com uma Inteligência Artificial que utiliza esses arquivos como **contexto** para responder a perguntas de forma mais precisa e confiável.
 
@@ -51,7 +55,7 @@ O fluxo de dados ocorre da seguinte forma:
 
 ### 📊 Diagrama de Arquitetura
 
-<img src="./Diagram.png"/>
+<img src="./docs/Diagram.png"/>
 
 ---
 
