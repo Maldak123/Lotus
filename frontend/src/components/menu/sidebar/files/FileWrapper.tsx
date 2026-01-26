@@ -14,7 +14,7 @@ const FileWrapper = ({ file }: FileWrapperProps) => {
   const { updateStatusFile } = useFilePreview();
 
   console.log(filesPreview);
-  
+
 
   useEffect(() => {
     let interval: number | undefined;
@@ -22,7 +22,7 @@ const FileWrapper = ({ file }: FileWrapperProps) => {
       interval = setInterval(async () => {
         const currentStatus = await getStatusFile(file.document.file_id);
         updateStatusFile(currentStatus);
-      }, 2000);
+      }, 5000);
     }
 
     return () => clearInterval(interval);
